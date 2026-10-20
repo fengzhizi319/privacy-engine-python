@@ -1,0 +1,14 @@
+{
+  "id": "mask.bank_card.cn19",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "mask_bank_card",
+    "args": {
+      "value": "6222020200112233445"
+    }
+  },
+  "expect": {
+    "result": "622202*********3445"
+  }
+}

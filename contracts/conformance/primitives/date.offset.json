@@ -1,0 +1,15 @@
+{
+  "id": "date.offset",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "random_date_offset",
+    "args": {
+      "date": "2024-01-15",
+      "offset_days": 10
+    }
+  },
+  "expect": {
+    "result": "2024-01-25"
+  }
+}

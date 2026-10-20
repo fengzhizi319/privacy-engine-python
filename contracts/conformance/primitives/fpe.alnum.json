@@ -1,0 +1,15 @@
+{
+  "id": "fpe.alnum",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "fpe_encrypt_numeric",
+    "args": {
+      "value": "ABC-1234-xyz",
+      "secret_key": "conf-secret"
+    }
+  },
+  "expect": {
+    "result": "ATZ-7093-mps"
+  }
+}

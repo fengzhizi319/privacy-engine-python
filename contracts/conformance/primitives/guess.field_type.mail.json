@@ -1,0 +1,14 @@
+{
+  "id": "guess.field_type.mail",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "guess_field_type",
+    "args": {
+      "field_name": "user_mail"
+    }
+  },
+  "expect": {
+    "result": "email"
+  }
+}

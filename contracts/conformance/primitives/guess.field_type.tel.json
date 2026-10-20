@@ -1,0 +1,14 @@
+{
+  "id": "guess.field_type.tel",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "guess_field_type",
+    "args": {
+      "field_name": "tel"
+    }
+  },
+  "expect": {
+    "result": "mobile"
+  }
+}

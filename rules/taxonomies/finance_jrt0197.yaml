@@ -1,0 +1,75 @@
+# JR/T 0197-2020 金融数据安全分级指南分类体系
+domain: "finance"
+standard_id: "JR_T_0197"
+version: "1.0.0"
+description: "JR/T 0197-2020 金融数据安全分级指南"
+
+levels:
+  C1:
+    id: "C1"
+    name: "第一级（不敏感）"
+    rank: 1
+    description: "公开可获取的金融数据"
+  C2:
+    id: "C2"
+    name: "第二级（低敏感）"
+    rank: 2
+    description: "内部使用的金融数据"
+  C3:
+    id: "C3"
+    name: "第三级（敏感）"
+    rank: 3
+    description: "涉及个人金融信息"
+  C4:
+    id: "C4"
+    name: "第四级（高敏感）"
+    rank: 4
+    description: "涉及核心金融账户"
+
+categories:
+  FINANCIAL_ACCOUNT:
+    id: "FINANCIAL_ACCOUNT"
+    name: "金融账户信息"
+  FINANCIAL_TRANSACTION:
+    id: "FINANCIAL_TRANSACTION"
+    name: "金融交易信息"
+  PERSONAL_FINANCIAL:
+    id: "PERSONAL_FINANCIAL"
+    name: "个人金融信息"
+  INSTITUTION_INTERNAL:
+    id: "INSTITUTION_INTERNAL"
+    name: "机构内部信息"
+  PERSONAL_BASIC:
+    id: "PERSONAL_BASIC"
+    name: "个人基本信息"
+  COMPOSITE_FINANCE_COMBO:
+    id: "COMPOSITE_FINANCE_COMBO"
+    name: "组合金融敏感信息"
+
+default_level: "C3"
+
+# 置信度策略配置
+confidence_policy:
+  conflict_confidence: 0.7
+  conflict_needs_review: true
+  enable_llm_arbitration: false
+  llm_confidence_threshold: 0.6
+  enable_ner: false
+  enable_llm: false
+  ner_trigger_max_rank: 2        # C1~C4 体系：仅 C1/C2 时触发 NER
+
+# NER 实体→等级映射（金融领域）
+ner_entity_mapping:
+  GENOMIC_HINT: "C4"
+  MEDICAL_DISEASE: "C3"
+  MEDICATION: "C3"
+  SURGERY: "C3"
+  BODY_PART: "C2"
+
+# 金融领域敏感关键词（NER 命中时升级为 C4）
+ner_sensitive_keywords:
+  - "洗钱"
+  - "恐怖融资"
+  - "内幕交易"
+  - "欺诈"
+  - "非法集资"

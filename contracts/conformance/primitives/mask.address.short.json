@@ -1,0 +1,14 @@
+{
+  "id": "mask.address.short",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "mask_address",
+    "args": {
+      "value": "短地址"
+    }
+  },
+  "expect": {
+    "result": "短地址"
+  }
+}

@@ -1,0 +1,103 @@
+# =============================================================================
+# PrivShield — 隐私参数配置文件（示例）
+# =============================================================================
+#
+# 使用方式：
+#   1. 复制本文件为 privacy-profile.yaml
+#   2. 按需修改各原语参数
+#   3. 通过环境变量指定路径：export PRIVACY_PROFILE=privacy-profile.yaml
+#      或在启动时传入：PrivacyService(profile_path="privacy-profile.yaml")
+#
+# 参数优先级（从高到低）：
+#   1. 请求级参数（API 调用时传入）
+#   2. 个性化推荐参数（config/personalized-profiles.yaml，由系统自动生成）
+#   3. 本文件中 primitives.<primitive> 的配置
+#   4. 系统内置默认值（见下方注释）
+#
+# 注意：本文件为示例模板，不会被服务自动加载。请复制为 privacy-profile.yaml 后使用。
+# =============================================================================
+
+primitives:
+  # ---------------------------------------------------------------------------
+  # 差分隐私（Differential Privacy）
+  # ---------------------------------------------------------------------------
+  # 内置默认值：epsilon=1.0, delta=0.0, mechanism="laplace"
+  dp:
+    # 隐私预算 epsilon，必须为正数。越小隐私保护越强，但数据效用越低。
+    # 推荐范围：0.1（强隐私）~ 10.0（高效用）
+    epsilon: 1.0
+
+    # 松弛参数 delta，通常设为 1/n² 量级（n 为数据集大小）。
+    # 设为 0 时使用纯 ε-DP（Laplace 机制）；> 0 时可使用 Gaussian 机制。
+    delta: 0.0
+
+    # 噪声机制："laplace" 或 "gaussian"
+    # - laplace: 适用于 ε-DP，噪声尺度 = sensitivity / epsilon
+    # - gaussian: 适用于 (ε,δ)-DP，噪声更集中，尾部更小
+    mechanism: "laplace"
+
+  # ---------------------------------------------------------------------------
+  # K-匿名（K-Anonymity）
+  # ---------------------------------------------------------------------------
+  # 内置默认值：k=5, l=2, t=0.2, max_depth=10
+  k_anonymity:
+    # K-匿名阈值，必须 >= 2。表示每条记录至少与 k-1 条记录不可区分。
+    # 推荐范围：5（一般场景）~ 20（高隐私场景）
+    k: 5
+
+    # L-Diversity 参数（预留），确保每个等价组至少包含 l 个不同敏感值。
+    l: 2
+
+    # T-Closeness 参数（预留），等价组分布与全局分布的 EMD 距离上限。
+    t: 0.2
+
+    # Mondrian 算法最大递归深度，控制数据集级 K-匿名的分区精细度。
+    max_depth: 10
+
+  # ---------------------------------------------------------------------------
+  # 查询混淆（Query Obfuscation / QOL）
+  # ---------------------------------------------------------------------------
+  # 内置默认值：num_dummies=3, 附带医疗/通用 dummy 查询池
+  qol:
+    # 每次查询混淆时注入的虚假查询数量，必须 >= 1。
+    num_dummies: 3
+
+    # 自定义医疗领域 dummy 查询池（覆盖内置池）
+    # medical_pool:
+    #   - "高血压患者的日常饮食建议"
+    #   - "糖尿病患者运动注意事项"
+
+    # 自定义通用领域 dummy 查询池（覆盖内置池）
+    # generic_pool:
+    #   - "天气预报查询"
+    #   - "附近医院挂号流程"
+
+  # ---------------------------------------------------------------------------
+  # 数据分类（Classification）
+  # ---------------------------------------------------------------------------
+  # 内置默认值：default_level="L3", enable_rule_engine=true,
+  #            enable_small_ner=false, enable_llm=false
+  classification:
+    # 默认敏感等级（未命中任何规则时的兜底级别）
+    default_level: "L3"
+
+    # 脱敏抹平默认模式："redact" (无痕彻底抹平) 或 "mask" (显式标签掩码)
+    mask_mode: "redact"
+
+    # 脱敏抹平底层引擎："ner" (Layer-2 Small-NER 命名实体抹平模式) 或 "rule" (规则引擎)
+    redact_engine: "ner"
+
+    # 是否启用规则引擎（Layer-1），基于字段名和值模式匹配
+    enable_rule_engine: true
+
+    # 是否启用小型 NER 模型（Layer-2），优先开启 TensorRT 极致 GPU 加速引擎
+    enable_small_ner: true
+    prefer_tensorrt: true
+
+    # 是否启用本地 LLM/VLM（Layer-3），需 GPU 和模型文件
+    enable_llm: false
+
+    # 手动覆盖规则：字段名 -> 强制指定的敏感等级
+    # manual_override:
+    #   internal_revenue: "L4"
+    #   public_announcement: "L1"

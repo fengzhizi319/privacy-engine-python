@@ -1,0 +1,61 @@
+# PrivShield Go 网关负载均衡配置
+# 对应 engine-go/internal/gateway/balancer.go 和 cmd/privshield-gateway/main.go
+
+# ── 网关监听 ──
+gateway:
+  host: "0.0.0.0"              # 监听地址
+  rest_port: 8000              # REST 代理端口
+  grpc_port: 50000             # gRPC 代理端口
+
+# ── 后端 Agent 节点池 ──
+backends:
+  - address: "127.0.0.1:8079"  # Agent REST 端口
+    weight: 1                  # 调度权重（SWRR 模式）
+    grpc_address: "127.0.0.1:50051"  # Agent gRPC 端口
+
+# 多节点示例：
+#  - address: "10.0.1.10:8079"
+#    weight: 5
+#    grpc_address: "10.0.1.10:50051"
+#  - address: "10.0.1.11:8079"
+#    weight: 5
+#    grpc_address: "10.0.1.11:50051"
+
+# ── 调度策略 ──
+strategy: "p2c"                # p2c (推荐) / round_robin / least_conn
+
+# ── P2C-EWMA 参数 ──
+p2c:
+  ewma_alpha: 0.2              # EWMA 衰减因子
+  ewma_init_latency_us: 1000   # 初始 EWMA 延迟（微秒）
+
+# ── 三态熔断器 ──
+circuit_breaker:
+  failure_threshold: 5         # 连续失败次数触发熔断
+  cooldown_seconds: 10         # 熔断冷却期（秒）
+  half_open_max_probes: 3      # HalfOpen 状态试探请求数
+
+# ── 健康检查 ──
+health_check:
+  enabled: true
+  interval_seconds: 5          # 主动探活间隔
+  timeout_seconds: 2           # 探活超时
+  unhealthy_threshold: 3       # 连续失败判定不健康
+  healthy_threshold: 2         # 连续成功判定恢复
+  http_path: "/health"         # HTTP 健康探针路径
+
+# ── 反向代理 ──
+proxy:
+  dial_timeout_ms: 1000        # 后端连接超时（毫秒）
+  response_header_timeout_ms: 30000  # 响应头超时
+  max_idle_conns: 100          # 最大空闲连接
+  idle_conn_timeout_seconds: 90      # 空闲连接超时
+  flush_interval_ms: 100       # 流式响应刷新间隔
+
+# ── 零信任 mTLS 回源 ──
+tls:
+  enabled: false               # 是否启用 mTLS 回源
+  ca_cert: ""                  # CA 证书路径
+  client_cert: ""              # 客户端证书路径
+  client_key: ""               # 客户端密钥路径
+  min_version: "1.3"           # 最低 TLS 版本: 1.2 / 1.3

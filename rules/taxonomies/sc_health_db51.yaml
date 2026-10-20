@@ -1,0 +1,68 @@
+domain: sc_health_db51
+standard_id: sc_health_db51
+version: 1.0.0
+description: 四川省健康医疗大数据应用指南
+levels:
+  L1:
+    id: L1
+    name: 公开数据/第1级
+    rank: 1
+    description: 低敏感度或经脱敏的数据
+  L2:
+    id: L2
+    name: 内部数据/第2级
+    rank: 2
+    description: 机构运营生产相关数据
+  L3:
+    id: L3
+    name: 敏感数据/第3级
+    rank: 3
+    description: 个人标识与身份信息
+  L4:
+    id: L4
+    name: 高敏感数据/第4级
+    rank: 4
+    description: 敏感病种与诊疗数据
+  L5:
+    id: L5
+    name: 极敏感数据/第5级
+    rank: 5
+    description: 基因与遗传数据
+categories:
+  PERSONAL_BASIC:
+    id: PERSONAL_BASIC
+    name: 个人基本信息数据
+    description: 能够识别特定自然人的数据
+  MEDICAL_TREATMENT:
+    id: MEDICAL_TREATMENT
+    name: 诊疗信息数据
+    description: 患者医疗服务过程产生的数据
+  FEE_BILLING:
+    id: FEE_BILLING
+    name: 费用信息数据
+    description: 医疗服务费用相关数据
+  PUBLIC_HEALTH:
+    id: PUBLIC_HEALTH
+    name: 公共卫生信息数据
+    description: 疾病控制与公共卫生事业数据
+  MANAGEMENT:
+    id: MANAGEMENT
+    name: 管理信息数据
+    description: 反映机构运营管理状况的数据
+  GENOMIC:
+    id: GENOMIC
+    name: 基因遗传数据
+    parent_id: MEDICAL_TREATMENT
+    description: 个人或家族基因/多组学检测数据
+  FINANCIAL_ACCOUNT:
+    id: FINANCIAL_ACCOUNT
+    name: 金融账户数据
+    parent_id: PERSONAL_BASIC
+default_level: L3
+confidence_policy:
+  conflict_confidence: 0.7
+  conflict_needs_review: true
+  enable_llm_arbitration: false
+  llm_confidence_threshold: 0.6
+  enable_ner: false
+  enable_llm: false

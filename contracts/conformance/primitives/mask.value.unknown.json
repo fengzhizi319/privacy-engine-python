@@ -1,0 +1,15 @@
+{
+  "id": "mask.value.unknown",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "mask_value",
+    "args": {
+      "field_name": "note",
+      "value": "abcdefgh"
+    }
+  },
+  "expect": {
+    "result": "abc**fgh"
+  }
+}

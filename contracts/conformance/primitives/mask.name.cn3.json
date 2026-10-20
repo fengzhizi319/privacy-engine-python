@@ -1,0 +1,14 @@
+{
+  "id": "mask.name.cn3",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "mask_name",
+    "args": {
+      "value": "张三丰"
+    }
+  },
+  "expect": {
+    "result": "张**丰"
+  }
+}

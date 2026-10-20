@@ -1,0 +1,54 @@
+# PrivShield Go 引擎隐私服务配置
+# 对应 engine-go/internal/service/service.go 的 Config 结构
+
+# ── 隐私预算 ──
+budget:
+  total_epsilon: 10.0          # 总 ε 预算
+  total_delta: 1.0e-5          # 总 δ 预算
+  window_seconds: 3600         # 滑动窗口自动重置周期（秒）
+  namespace: "default"         # 预算命名空间
+
+# ── 差分隐私 ──
+dp:
+  default_mechanism: "laplace" # 默认噪声机制: laplace / gaussian
+  default_epsilon: 1.0         # 默认 ε 消耗
+  default_delta: 1.0e-5        # 默认 δ 消耗
+  clip_lower: -1.0             # 默认梯度截断下界
+  clip_upper: 1.0              # 默认梯度截断上界
+
+# ── K-匿名 ──
+kano:
+  default_k: 5                 # 默认 K 值
+  max_depth: 10                # Mondrian 最大切分深度
+
+# ── 动态分类分级 ──
+classification:
+  default_domain: "medical"    # 默认领域
+  default_standard: "gbt_35273" # 默认标准
+  confidence_threshold: 0.75   # LLM 仲裁置信度阈值
+  enable_ner: false            # Layer 2 Small-NER（需 ONNX Runtime）
+  enable_llm: false            # Layer 3 LLM 仲裁（需本地 LLM）
+  llm_endpoint: ""             # LLM API 端点
+  llm_max_concurrency: 1       # LLM 推理并发上限
+
+# ── 安全底线 ──
+safety_floor:
+  min_level: "internal"        # 最低安全等级（不低于此）
+  confidence_threshold: 0.6    # 低置信度触发升级
+  force_upgrade_on_uncertainty: true
+
+# ── 医疗流水线 ──
+medical:
+  default_domain: "yibao"      # 默认医疗领域: yibao / kangyang
+  yibao_fields: 18             # 医保特化字段数
+  kangyang_fields: 27          # 康养特化字段数
+
+# ── 分类规则（内联覆盖） ──
+# 完整规则定义在 rules/domains/*.yaml
+# 此处可覆盖默认规则或添加自定义规则
+rules: []
+#  - id: "custom_pii"
+#    level: "confidential"
+#    category: "pii.custom"
+#    field_patterns: ["(?i)(custom_field)"]
+#    description: "自定义 PII 字段"

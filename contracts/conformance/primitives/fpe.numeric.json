@@ -1,0 +1,15 @@
+{
+  "id": "fpe.numeric",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "fpe_encrypt_numeric",
+    "args": {
+      "value": "110101199001011234",
+      "secret_key": "conf-secret"
+    }
+  },
+  "expect": {
+    "result": "670772188962180174"
+  }
+}

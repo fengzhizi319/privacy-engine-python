@@ -1,0 +1,27 @@
+{
+  "id": "grpc.mask_record.basic",
+  "kind": "exact",
+  "transport": "grpc",
+  "request": {
+    "rpc": "MaskRecord",
+    "message": {
+      "record": {
+        "mobile": "13812345678",
+        "name": "张三丰",
+        "id_card": "110101199001011234",
+        "note": "abcdefgh"
+      }
+    }
+  },
+  "expect": {
+    "json": {
+      "result": {
+        "mobile": "138****5678",
+        "name": "张**丰",
+        "id_card": "110101********1234",
+        "note": "abc**fgh"
+      }
+    }
+  },
+  "tolerance": 0
+}

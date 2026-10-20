@@ -1,0 +1,16 @@
+{
+  "id": "mask.default.unicode",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "mask_default",
+    "args": {
+      "value": "北京欢迎你",
+      "prefix": 3,
+      "suffix": 3
+    }
+  },
+  "expect": {
+    "result": "北****"
+  }
+}

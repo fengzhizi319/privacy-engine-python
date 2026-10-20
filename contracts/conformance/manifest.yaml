@@ -1,0 +1,12 @@
+version: 1
+description: Cross-language conformance between the Go reference engine and the Python engine.
+suites:
+  primitives:
+    dir: primitives
+    status: active
+  rest:
+    dir: rest
+    status: active
+  grpc:
+    dir: grpc
+    status: active

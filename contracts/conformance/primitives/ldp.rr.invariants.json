@@ -1,0 +1,17 @@
+{
+  "id": "ldp.rr.invariants",
+  "kind": "invariant",
+  "transport": "primitive",
+  "request": {
+    "op": "ldp_randomized_response",
+    "args": {
+      "value": true,
+      "epsilon": 1.0
+    }
+  },
+  "expect": {
+    "invariants": {
+      "result_is_bool": true
+    }
+  }
+}

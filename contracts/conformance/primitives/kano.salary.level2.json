@@ -1,0 +1,15 @@
+{
+  "id": "kano.salary.level2",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "salary_hierarchy",
+    "args": {
+      "value": "25000",
+      "level": 2
+    }
+  },
+  "expect": {
+    "result": "[25000K-25010K]"
+  }
+}

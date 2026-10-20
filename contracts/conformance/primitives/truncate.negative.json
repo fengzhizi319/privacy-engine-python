@@ -1,0 +1,15 @@
+{
+  "id": "truncate.negative",
+  "kind": "error",
+  "transport": "primitive",
+  "request": {
+    "op": "truncate",
+    "args": {
+      "value": "abcdef",
+      "keep_prefix": -1
+    }
+  },
+  "expect": {
+    "error_contains": "non-negative"
+  }
+}

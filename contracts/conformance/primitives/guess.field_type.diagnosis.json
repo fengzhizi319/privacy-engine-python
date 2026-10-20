@@ -1,0 +1,14 @@
+{
+  "id": "guess.field_type.diagnosis",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "guess_field_type",
+    "args": {
+      "field_name": "diagnosis"
+    }
+  },
+  "expect": {
+    "result": "medical"
+  }
+}

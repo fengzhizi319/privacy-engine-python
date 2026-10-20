@@ -1,0 +1,10 @@
+standard_id: gd_health
+description: 广东省健康医疗数据安全分类分级管理技术规范
+taxonomy: gd_health
+domains:
+- gd_health
+overrides: {}
+rule_overrides: {}
+extra_rules: []
+extra_downgrade_rules: []
+extra_composite_rules: []

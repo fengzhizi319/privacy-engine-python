@@ -1,0 +1,27 @@
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+.benchmarks/
+.coverage
+.coverage.*
+htmlcov/
+*.egg-info/
+build/
+dist/
+bin/
+terminator/terminator
+deploy/secrets/
+.env
+.env.*
+!.env.example
+data/*.db
+data/*.db-shm
+data/*.db-wal
+
+# config/env/<profile>.env 是无凭据的场景开关（API Key 仅为占位符），
+# 引擎按 profile 名加载，必须随代码提交；根 .gitignore 的 *.env 在此显式放行。
+!config/env/*.env

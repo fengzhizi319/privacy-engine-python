@@ -1,0 +1,108 @@
+# 金融行业分类规则 (JR/T 0197-2020)
+domain: "finance"
+version: "1.0.0"
+description: "金融行业分类规则 (JR/T 0197-2020)"
+
+# ==============================================================================
+# 1. 普通分类规则 (rules)
+# 常用字段包含：id, name, category, level, priority, match_logic, matchers
+# ==============================================================================
+rules:
+  # --- 金融账户字段名 ---
+  - id: "RULE_FIN_ACCOUNT"
+    name: "金融账户字段"
+    category: "FINANCIAL_ACCOUNT"
+    level: "C4"
+    priority: 100
+    match_logic: "AND"                     # 匹配逻辑: AND (全部匹配) 或 OR (任意匹配)
+    matchers:
+      - target: "field_name"               # 匹配目标: field_name (字段名), field_value (数据值), 或 both
+        operator: "keyword_contains"       # 匹配算子: keyword_contains (关键词匹配)
+        params:
+          keywords: [
+            "bankcard", "cardno", "card_no", "credit", "transaction", "asset", "balance", "account",
+            "account_no", "acc_no", "bank_card", "bank_account", "iban", "swift", "passbook",
+            "银行卡", "卡号", "账号", "资产", "余额", "账户", "银行账号", "存折"
+          ]
+          use_word_boundaries: false       # 设为 false 以全面支持中文和连续字串匹配
+
+  # --- 银行卡号值校验 ---
+  - id: "RULE_FIN_CARD_VALUE"
+    name: "银行卡号值校验"
+    category: "FINANCIAL_ACCOUNT"
+    level: "C4"
+    priority: 100
+    match_logic: "AND"
+    matchers:
+      - target: "field_value"              # 数据值采样扫描
+        operator: "luhn_checksum"          # 银行卡 Luhn 算法校验算子
+        params:
+          min_length: 16
+          max_length: 19
+
+  # --- 金融交易字段名 ---
+  - id: "RULE_FIN_TRANSACTION"
+    name: "金融交易字段"
+    category: "FINANCIAL_TRANSACTION"
+    level: "C3"
+    priority: 80
+    match_logic: "AND"
+    matchers:
+      - target: "field_name"
+        operator: "keyword_contains"
+        params:
+          keywords: [
+            "transfer", "payment", "pay", "withdraw", "deposit", "loan", "remittance", "billing",
+            "invoice", "order_amt", "trans_amt", "trans_amount", "pay_amt", "转账", "支付",
+            "取款", "存款", "贷款", "汇款", "交易金额", "账单", "扣款", "充值"
+          ]
+          use_word_boundaries: false
+
+  # --- 个人金融信息字段名 ---
+  - id: "RULE_FIN_PERSONAL"
+    name: "个人金融信息字段"
+    category: "PERSONAL_FINANCIAL"
+    level: "C3"
+    priority: 60
+    match_logic: "AND"
+    matchers:
+      - target: "field_name"
+        operator: "keyword_contains"
+        params:
+          keywords: [
+            "income", "salary", "wage", "paycheck", "tax", "insurance", "fund", "provident_fund",
+            "pension", "revenue", "bonus", "收入", "工资", "薪资", "税额", "纳税", "保险",
+            "社保", "公积金", "养老金", "奖金", "理财"
+          ]
+          use_word_boundaries: false
+
+# ==============================================================================
+# 2. 敏感度降级与覆盖规则 (downgrade_rules)
+# 可用字段包含：id, name, keywords, level, category, force_suppress, max_force_suppress_level, exempt_rules
+# ==============================================================================
+downgrade_rules:
+  - id: "RULE_FIN_DOWN_STAT"
+    name: "金融运营统计强行降级模板示例"
+    keywords: [
+      "fin_stat_summary", "financial_stat", "stat_summary", "annual_report", "fin_report",
+      "stat_cnt", "财务汇总", "金融统计", "统计月报", "报表", "汇总"
+    ]
+    level: "C2"
+    category: "FINANCIAL_OPERATIONAL_STAT"
+    force_suppress: false                 # 是否开启强制压制擦除普通规则标签 (true/false)
+    max_force_suppress_level: ""          # 强行压制上限 (如 'C3'，空=使用规则自身 level 作为上限)
+    exempt_rules: []                      # 压制豁免例外名单 (空=没有例外全额压制；列表填入的规则 ID 或通配符如 '*_EXACT' 豁免不被压制)
+
+# ==============================================================================
+# 3. 组合/上下文增强规则 (composite_rules)
+# 可用字段包含：id, name, field_patterns, min_matches, target_level, category, table_name_pattern, boost_level
+# ==============================================================================
+composite_rules:
+  - id: "COMP_FIN_001"
+    name: "金融账户组合"
+    field_patterns: ["bankcard|cardno|account|credit|transaction"]
+    min_matches: 2
+    target_level: "C4"
+    category: "COMPOSITE_FINANCE_COMBO"
+    table_name_pattern: ""                # 表名正则限制 (空=匹配任意表)
+    boost_level: ""                       # 提级配置 (空=直接设为 target_level)

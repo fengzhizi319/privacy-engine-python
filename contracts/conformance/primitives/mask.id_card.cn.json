@@ -1,0 +1,14 @@
+{
+  "id": "mask.id_card.cn",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "mask_id_card",
+    "args": {
+      "value": "110101199001011234"
+    }
+  },
+  "expect": {
+    "result": "110101********1234"
+  }
+}

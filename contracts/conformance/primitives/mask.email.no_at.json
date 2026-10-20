@@ -1,0 +1,14 @@
+{
+  "id": "mask.email.no_at",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "mask_email",
+    "args": {
+      "value": "noemail"
+    }
+  },
+  "expect": {
+    "result": "noe*ail"
+  }
+}

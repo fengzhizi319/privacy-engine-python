@@ -1,0 +1,15 @@
+{
+  "id": "mask.value.medical",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "mask_value",
+    "args": {
+      "field_name": "diagnosis_name",
+      "value": "2型糖尿病"
+    }
+  },
+  "expect": {
+    "result": "2****"
+  }
+}

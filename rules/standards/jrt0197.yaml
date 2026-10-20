@@ -1,0 +1,11 @@
+# JR/T 0197-2020 金融数据安全分级指南
+standard_id: "jrt0197"
+description: "JR/T 0197-2020 金融数据安全分级指南"
+taxonomy: "finance_jrt0197"  # 使用 C1~C4 体系
+
+domains:
+  - "general-pii"
+  - "finance"
+
+global_params:
+  default_level: "C3"

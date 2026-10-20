@@ -1,0 +1,15 @@
+{
+  "id": "kano.gender.level1",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "gender_hierarchy",
+    "args": {
+      "value": "男",
+      "level": 1
+    }
+  },
+  "expect": {
+    "result": "*"
+  }
+}

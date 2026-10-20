@@ -1,0 +1,20 @@
+{
+  "id": "rest.hash.hmac",
+  "kind": "exact",
+  "transport": "rest",
+  "request": {
+    "method": "POST",
+    "path": "/v1/privacy/hash",
+    "json": {
+      "value": "hello",
+      "salt": "salt"
+    }
+  },
+  "expect": {
+    "status": 200,
+    "json": {
+      "hash": "SKTdBFvNvKAtTphi"
+    }
+  },
+  "tolerance": 0
+}

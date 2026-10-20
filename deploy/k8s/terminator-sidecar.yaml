@@ -1,0 +1,266 @@
+# ==============================================================================
+# Python 引擎 + Go TLCP/mTLS 终结器 sidecar（单 Pod 共享网络命名空间）
+# ==============================================================================
+# 对外只有终结器监听：REST 8079 / gRPC 50051 / 运维口 9079。
+# Python 监听 127.0.0.1:18079/15051/19079，不声明端口、不对外可达。
+#
+# 前置 Secret / ConfigMap（由部署方提供）：
+#   Secret      privshield-identity-hmac  key=key（≥16 字节共享 HMAC 密钥）
+#   Secret      privshield-tls            server.crt / server.key / ca.crt
+#   Secret      privshield-tlcp           server-sign.crt|key, server-enc.crt|key, ca.crt
+#   ConfigMap   privshield-mtls-whitelist mtls-whitelist.yaml（clients:/entries:）
+#   Secret      privshield-api-keys       internal_keys.json → PRIVACY_AUTH_INTERNAL_KEYS_JSON
+#
+# 生产必须把镜像 tag 替换为不可变 digest，并按实际协议栈调整运维探针：
+# 本清单使用 PRIVACY_OPS_TLS_STACK=both，HTTPS 探针可用；若改 tlcp，改为 TCP 探针。
+# ==============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: privshield-python-terminator-env
+data:
+  PRIVACY_TERMINATOR_REST_UPSTREAM: "http://127.0.0.1:18079"
+  PRIVACY_TERMINATOR_GRPC_UPSTREAM: "127.0.0.1:15051"
+  PRIVACY_TERMINATOR_OPS_UPSTREAM: "http://127.0.0.1:19079"
+  PRIVACY_TERMINATOR_IDENTITY_ENABLED: "true"
+  PRIVACY_TERMINATOR_IDENTITY_HMAC_ALGO: "sm3"
+  PRIVACY_TERMINATOR_IDENTITY_MAX_SKEW_SECONDS: "60"
+  PRIVACY_TLS_STACK: "tlcp"
+  PRIVACY_OPS_TLS_STACK: "both"
+  PRIVACY_TLS_CERT_FILE: "/certs/server.crt"
+  PRIVACY_TLS_KEY_FILE: "/certs/server.key"
+  PRIVACY_TLS_CA_FILE: "/certs/ca.crt"
+  PRIVACY_TLCP_SIGN_CERT_FILE: "/certs/tlcp/server-sign.crt"
+  PRIVACY_TLCP_SIGN_KEY_FILE: "/certs/tlcp/server-sign.key"
+  PRIVACY_TLCP_ENC_CERT_FILE: "/certs/tlcp/server-enc.crt"
+  PRIVACY_TLCP_ENC_KEY_FILE: "/certs/tlcp/server-enc.key"
+  PRIVACY_TLCP_CLIENT_CA_FILE: "/certs/tlcp/ca.crt"
+  PRIVACY_AUTH_MTLS_WHITELIST_FILE: "/etc/privshield/mtls-whitelist.yaml"
+  PRIVACY_LOG_LEVEL: "INFO"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: privshield-python-engine
+  labels:
+    app: privshield-python-engine
+spec:
+  type: ClusterIP
+  selector:
+    app: privshield-python-engine
+  ports:
+    - name: rest
+      port: 8079
+      targetPort: rest
+    - name: grpc
+      port: 50051
+      targetPort: grpc
+    - name: ops
+      port: 9079
+      targetPort: ops
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: privshield-python-engine
+  labels:
+    app: privshield-python-engine
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: privshield-python-engine
+  template:
+    metadata:
+      labels:
+        app: privshield-python-engine
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: terminator
+          image: privshield-python-terminator:2.0.0
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: privshield-python-terminator-env
+          env:
+            - name: PRIVACY_TERMINATOR_IDENTITY_HMAC_KEY_FILE
+              value: /run/secrets/identity-hmac-key
+          ports:
+            - name: rest
+              containerPort: 8079
+            - name: grpc
+              containerPort: 50051
+            - name: ops
+              containerPort: 9079
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: ops
+              scheme: HTTPS
+            failureThreshold: 30
+            periodSeconds: 2
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: ops
+              scheme: HTTPS
+            periodSeconds: 15
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: ops
+              scheme: HTTPS
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tls
+              mountPath: /certs
+              readOnly: true
+            - name: tlcp
+              mountPath: /certs/tlcp
+              readOnly: true
+            - name: identity-hmac
+              mountPath: /run/secrets/identity-hmac-key
+              subPath: key
+              readOnly: true
+            - name: mtls-whitelist
+              mountPath: /etc/privshield/mtls-whitelist.yaml
+              subPath: mtls-whitelist.yaml
+              readOnly: true
+
+        - name: python-engine
+          image: privshield-python:2.0.0
+          imagePullPolicy: IfNotPresent
+          env:
+            # 只监听 Pod 共享命名空间的回环地址。
+            - name: PRIVACY_REST_HOST
+              value: "127.0.0.1"
+            - name: PRIVACY_REST_PORT
+              value: "18079"
+            - name: PRIVACY_GRPC_HOST
+              value: "127.0.0.1"
+            - name: PRIVACY_GRPC_PORT
+              value: "15051"
+            - name: PRIVACY_OPS_HOST
+              value: "127.0.0.1"
+            - name: PRIVACY_OPS_PORT
+              value: "19079"
+            # Python 不终结 TLCP；回环段明文，由终结器对外提供三档 mTLS。
+            - name: PRIVACY_OPS_TLS_STACK
+              value: "tlcp"
+            - name: PRIVACY_TLS_STACK
+              value: "tlcp"
+            - name: PRIVACY_TERMINATOR_IDENTITY_ENABLED
+              value: "true"
+            - name: PRIVACY_TERMINATOR_IDENTITY_HMAC_ALGO
+              value: "sm3"
+            - name: PRIVACY_TERMINATOR_IDENTITY_HMAC_KEY_FILE
+              value: "/run/secrets/identity-hmac-key"
+            - name: PRIVACY_TERMINATOR_IDENTITY_MAX_SKEW_SECONDS
+              value: "60"
+            - name: PRIVACY_AUTH_ENABLED
+              value: "true"
+            - name: PRIVACY_AUTH_INTERNAL_KEYS_JSON
+              valueFrom:
+                secretKeyRef:
+                  name: privshield-api-keys
+                  key: internal_keys.json
+            - name: PRIVACY_AUTH_INTERNAL_MTLS_ENABLED
+              value: "true"
+            - name: PRIVACY_AUTH_MTLS_WHITELIST_FILE
+              value: "/etc/privshield/mtls-whitelist.yaml"
+            - name: PRIVACY_RATE_LIMIT_ENABLED
+              value: "true"
+            - name: PRIVACY_LOG_FORMAT
+              value: "json"
+          # Python 只监听回环，kubelet 的 HTTP 探针无法直达；用容器内 exec 探针。
+          startupProbe:
+            exec:
+              command: ["python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:18079/livez', timeout=2)"]
+            failureThreshold: 30
+            periodSeconds: 2
+          livenessProbe:
+            exec:
+              command: ["python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:18079/livez', timeout=2)"]
+            periodSeconds: 15
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command: ["python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:18079/readyz', timeout=2)"]
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: identity-hmac
+              mountPath: /run/secrets/identity-hmac-key
+              subPath: key
+              readOnly: true
+            - name: mtls-whitelist
+              mountPath: /etc/privshield/mtls-whitelist.yaml
+              subPath: mtls-whitelist.yaml
+              readOnly: true
+            - name: python-data
+              mountPath: /data
+            - name: python-tmp
+              mountPath: /tmp
+
+      volumes:
+        - name: tls
+          secret:
+            secretName: privshield-tls
+            # 私钥卷显式 0440：属主 root:fsGroup(1000)，组内可读，不给其他账号留位。
+            defaultMode: 0440
+        - name: tlcp
+          secret:
+            secretName: privshield-tlcp
+            # SM2 签名/加密私钥同档。
+            defaultMode: 0440
+        - name: identity-hmac
+          secret:
+            secretName: privshield-identity-hmac
+            # 身份签名 Key 同档；仅终结器与引擎的 fsGroup 可读。
+            defaultMode: 0440
+        - name: mtls-whitelist
+          configMap:
+            name: privshield-mtls-whitelist
+            # 白名单是指派配置而非密钥，0444 与只读根文件系统一致。
+            defaultMode: 0444
+        - name: python-data
+          emptyDir: {}
+        - name: python-tmp
+          emptyDir: {}

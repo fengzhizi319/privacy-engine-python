@@ -1,0 +1,68 @@
+# 广东省健康医疗数据安全分类分级管理技术规范分类体系
+# 依据《广东省健康医疗数据安全分类分级管理技术规范》附录 A（分类）与附录 B（分级）。
+# 等级体系采用 G1~G4 四级（G = Guangdong），与四川 DB51 的 L1~L5、
+# 金融 JR/T 0197 的 C1~C4 相互独立，避免跨标准等级混淆。
+domain: gd_health
+standard_id: gd_health
+version: 1.0.0
+description: 广东省健康医疗数据安全分类分级管理技术规范
+
+levels:
+  G1:
+    id: G1
+    name: 第1级（低敏感）
+    rank: 1
+    description: 数据被破坏对各方利益影响程度低，如医院基本数据、公共卫生统计数据
+  G2:
+    id: G2
+    name: 第2级（较低敏感）
+    rank: 2
+    description: 数据被破坏造成一定影响且可克服，如一般性用药信息
+  G3:
+    id: G3
+    name: 第3级（敏感）
+    rank: 3
+    description: 数据被破坏造成较严重困扰，如住院医嘱、检查检验报告、手术记录、医疗交易
+  G4:
+    id: G4
+    name: 第4级（高敏感）
+    rank: 4
+    description: 数据被破坏对个人造成重大不可消除影响，如个人身份/通讯/生物识别信息、病历、保险信息
+
+categories:
+  PERSONAL_ATTRIBUTE:
+    id: PERSONAL_ATTRIBUTE
+    name: 个人属性数据
+    description: 人口统计、身份、通讯、生物识别、信用记录等可识别个人的数据
+  PERSONAL_HEALTH:
+    id: PERSONAL_HEALTH
+    name: 个人健康状况数据
+    description: 主诉、现病史、既往病史、家族史、过敏史、检验检查、基因测序等
+  MEDICAL_APPLICATION:
+    id: MEDICAL_APPLICATION
+    name: 医疗应用数据
+    description: 门急诊病历、住院医嘱、检查检验报告、用药信息、手术记录等
+  MEDICAL_FINANCE:
+    id: MEDICAL_FINANCE
+    name: 医疗资金和支付数据
+    description: 医疗交易信息、保险信息等
+  HEALTH_RESOURCE:
+    id: HEALTH_RESOURCE
+    name: 卫生资源数据
+    description: 医院基本数据、医院运营数据等
+  PUBLIC_HEALTH:
+    id: PUBLIC_HEALTH
+    name: 公共卫生数据
+    description: 传染病疫情、疾病监测、疾病预防、出生死亡等统计数据
+
+default_level: G2
+
+# 置信度策略配置（与金融标准一致：规则层优先，轻量启用）
+confidence_policy:
+  conflict_confidence: 0.7
+  conflict_needs_review: true
+  enable_llm_arbitration: false
+  llm_confidence_threshold: 0.6
+  enable_ner: false
+  enable_llm: false
+  ner_trigger_max_rank: 2        # G1~G4 体系：仅 G1/G2 时触发 NER

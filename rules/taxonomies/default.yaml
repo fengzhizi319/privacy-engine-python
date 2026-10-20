@@ -1,0 +1,99 @@
+# 内置默认分类体系（兼容现有 L1~L5 + DB51 业务分类）
+domain: "default"
+standard_id: "INTERNAL"
+version: "1.0.0"
+description: "内置默认分类体系（兼容现有 L1~L5 + DB51 业务分类）"
+
+levels:
+  L1:
+    id: "L1"
+    name: "公开数据"
+    rank: 1
+    description: "无隐私风险，可公开访问"
+  L2:
+    id: "L2"
+    name: "内部数据"
+    rank: 2
+    description: "低敏感度，仅限内部使用"
+  L3:
+    id: "L3"
+    name: "敏感数据"
+    rank: 3
+    description: "中敏感度，涉及个人基本信息"
+  L4:
+    id: "L4"
+    name: "高敏感数据"
+    rank: 4
+    description: "需重点保护，涉及敏感病种/金融账户"
+  L5:
+    id: "L5"
+    name: "极敏感数据"
+    rank: 5
+    description: "最高级别保护，涉及基因组/生物识别"
+
+categories:
+  PERSONAL_BASIC:
+    id: "PERSONAL_BASIC"
+    name: "个人基本信息"
+  MEDICAL_TREATMENT:
+    id: "MEDICAL_TREATMENT"
+    name: "诊疗信息"
+  FEE_BILLING:
+    id: "FEE_BILLING"
+    name: "费用信息"
+  PUBLIC_HEALTH:
+    id: "PUBLIC_HEALTH"
+    name: "公共卫生信息"
+  MANAGEMENT:
+    id: "MANAGEMENT"
+    name: "管理信息"
+  GENOMIC:
+    id: "GENOMIC"
+    name: "基因组信息"
+    parent_id: "MEDICAL_TREATMENT"
+  FINANCIAL:
+    id: "FINANCIAL"
+    name: "金融信息"
+  MEDICAL_ICD10_GENERAL:
+    id: "MEDICAL_ICD10_GENERAL"
+    name: "ICD-10 通用编码"
+    parent_id: "MEDICAL_TREATMENT"
+  MEDICAL_ICD10_HIV:
+    id: "MEDICAL_ICD10_HIV"
+    name: "ICD-10 HIV 相关"
+    parent_id: "MEDICAL_TREATMENT"
+  MEDICAL_ICD10_STD:
+    id: "MEDICAL_ICD10_STD"
+    name: "ICD-10 性传播疾病"
+    parent_id: "MEDICAL_TREATMENT"
+  MEDICAL_ICD10_PSYCHIATRIC:
+    id: "MEDICAL_ICD10_PSYCHIATRIC"
+    name: "ICD-10 精神类疾病"
+    parent_id: "MEDICAL_TREATMENT"
+  MEDICAL_ICD10_CANCER:
+    id: "MEDICAL_ICD10_CANCER"
+    name: "ICD-10 恶性肿瘤"
+    parent_id: "MEDICAL_TREATMENT"
+  PUBLIC_REPORT:
+    id: "PUBLIC_REPORT"
+    name: "公开报告"
+  OPERATIONAL_STAT:
+    id: "OPERATIONAL_STAT"
+    name: "运营统计"
+  COMPOSITE_PII_COMBO:
+    id: "COMPOSITE_PII_COMBO"
+    name: "组合敏感个人信息"
+  COMPOSITE_MEDICAL_GENOMIC:
+    id: "COMPOSITE_MEDICAL_GENOMIC"
+    name: "组合医疗基因组"
+
+default_level: "L3"
+
+# 置信度策略配置
+confidence_policy:
+  conflict_confidence: 0.7        # 规则冲突时的置信度（普通规则 + 降级规则同时命中）
+  conflict_needs_review: true     # 冲突时标记人工复核
+  enable_llm_arbitration: false   # 是否启用 LLM 仲裁（需 ML 镜像）
+  llm_confidence_threshold: 0.6   # LLM 触发阈值
+  enable_ner: false               # 是否启用 NER 层
+  enable_llm: false               # 是否显式启用 LLM 层

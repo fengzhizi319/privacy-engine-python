@@ -1,0 +1,14 @@
+{
+  "id": "medical.date.month",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "truncate_date_to_month",
+    "args": {
+      "date": "2024.1.15"
+    }
+  },
+  "expect": {
+    "result": "2024-01"
+  }
+}

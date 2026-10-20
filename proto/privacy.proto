@@ -1,0 +1,513 @@
+syntax = "proto3";
+
+package privacy.local;
+
+option java_multiple_files = true;
+option java_package = "com.github.fengzhizi319.privshield.grpc";
+option go_package = "github.com/fengzhizi319/PrivShield-go/proto";
+
+service PrivacyService {
+  rpc Mask (MaskRequest) returns (MaskResponse);
+  rpc MaskRecord (MaskRecordRequest) returns (MaskRecordResponse);
+  rpc MaskBatch (MaskBatchRequest) returns (MaskBatchResponse);
+  rpc MaskDataFrame (MaskDataFrameRequest) returns (MaskDataFrameResponse);
+  rpc Hash (HashRequest) returns (HashResponse);
+  rpc DPCount (DPRequest) returns (DPResponse);
+  rpc DPSum (DPRequest) returns (DPResponse);
+  rpc DPMean (DPRequest) returns (DPResponse);
+  rpc DPHistogram (DPHistogramRequest) returns (DPHistogramResponse);
+  rpc DPNoisyCount (DPNoisyCountRequest) returns (DPResponse);
+  rpc DPNoisySum (DPNoisySumRequest) returns (DPResponse);
+  rpc DPNoisyMean (DPNoisyMeanRequest) returns (DPResponse);
+  rpc DPNoisyHistogram (DPNoisyHistogramRequest) returns (DPHistogramResponse);
+  rpc DPChunkedCount (DPChunkedCountRequest) returns (DPResponse);
+  rpc DPChunkedSum (DPChunkedSumRequest) returns (DPResponse);
+  rpc DPChunkedMean (DPChunkedMeanRequest) returns (DPResponse);
+  rpc DPChunkedHistogram (DPChunkedHistogramRequest) returns (DPHistogramResponse);
+  rpc KAnonymizeRecord (KAnonymizeRequest) returns (KAnonymizeResponse);
+  rpc KAnonymizeTable (KAnonymizeTableRequest) returns (KAnonymizeTableResponse);
+  rpc KAnonymizeDataFrame (KAnonymizeDataFrameRequest) returns (KAnonymizeDataFrameResponse);
+  rpc ObfuscateQuery (ObfuscateQueryRequest) returns (ObfuscateQueryResponse);
+  rpc ObfuscateQueryBatch (ObfuscateQueryBatchRequest) returns (ObfuscateQueryBatchResponse);
+  rpc Health (HealthRequest) returns (HealthResponse);
+  rpc RecommendParams (RecommendRequest) returns (RecommendResponse);
+  rpc PerturbBinaryBatch (PerturbBinaryBatchRequest) returns (PerturbBinaryBatchResponse);
+  rpc PerturbCategoricalBatch (PerturbCategoricalBatchRequest) returns (PerturbCategoricalBatchResponse);
+  rpc EstimateBinaryFrequency (EstimateBinaryFrequencyRequest) returns (EstimateBinaryFrequencyResponse);
+  rpc EstimateCategoricalHistogram (EstimateCategoricalHistogramRequest) returns (EstimateCategoricalHistogramResponse);
+  rpc DPAggregate (DPAggregateRequest) returns (DPAggregateResponse);
+  rpc DPVectorSum (DPVectorSumRequest) returns (DPVectorSumResponse);
+  rpc DPAdaptiveClip (DPAdaptiveClipRequest) returns (DPAdaptiveClipResponse);
+  rpc DPGroupBy (DPGroupByRequest) returns (DPGroupByResponse);
+  rpc DPVectorMean (DPVectorMeanRequest) returns (DPVectorMeanResponse);
+  rpc DynClassify (DynClassificationRequest) returns (DynClassificationResponse);
+  rpc DynEval (DynEvalRequest) returns (DynEvalResponse);
+  rpc DynEvalRecord (DynEvalRecordRequest) returns (DynEvalRecordResponse);
+  rpc DynStandards (DynStandardsRequest) returns (DynStandardsResponse);
+  rpc DynDomains (DynDomainsRequest) returns (DynDomainsResponse);
+  rpc DynOperators (DynOperatorsRequest) returns (DynOperatorsResponse);
+  rpc DynValidate (DynValidateRequest) returns (DynValidateResponse);
+  rpc DynGenerateProfile (DynGenerateProfileRequest) returns (DynGenerateProfileResponse);
+}
+
+message DPResultProto {
+  double value = 1;
+  repeated double value_vector = 2 [packed = true];
+  string value_json = 3;
+  string noise_mechanism = 4;
+  double noise_scale = 5;
+  double epsilon_spent = 6;
+  double delta_spent = 7;
+  double confidence_interval_low = 8;
+  double confidence_interval_high = 9;
+}
+
+message DPAggregateRequest {
+  repeated RecordEntry rows = 1;
+  string specs_json = 2;
+  double epsilon = 3;
+  double delta = 4;
+  string mechanism = 5;
+  bool return_details = 6;
+  double clip_lower = 7;
+  double clip_upper = 8;
+}
+
+message DPAggregateResponse {
+  string results_json = 1;
+}
+
+message DPVectorSumRequest {
+  repeated DoubleChunk vectors = 1;
+  double max_norm = 2;
+  double epsilon = 3;
+  double delta = 4;
+  string mechanism = 5;
+  bool return_details = 6;
+  // Public output dimension, required when the private population is empty.
+  int32 public_dimension = 7;
+}
+
+message DPVectorSumResponse {
+  repeated double noisy_vector = 1 [packed = true];
+  DPResultProto result_details = 2;
+}
+
+message DPAdaptiveClipRequest {
+  repeated double values = 1;
+  double epsilon = 2;
+  double target_quantile = 3;
+  int32 num_iterations = 4;
+  double initial_clip = 5;
+}
+
+message DPAdaptiveClipResponse {
+  double clip_lower = 1;
+  double clip_upper = 2;
+}
+
+message DPGroupByRequest {
+  repeated RecordEntry rows = 1;
+  string group_col = 2;
+  string target_col = 3;
+  string agg = 4;
+  double epsilon = 5;
+  double delta = 6;
+  double clip_lower = 7;
+  double clip_upper = 8;
+  string mechanism = 9;
+  // Fixed independently of the private rows; required.
+  repeated string public_groups = 10;
+}
+
+message DPGroupByResponse {
+  string result_json = 1;
+}
+
+message MaskRequest {
+  string field_name = 1;
+  string value = 2;
+  string context = 3;
+}
+
+message MaskResponse {
+  string result = 1;
+}
+
+message MaskRecordRequest {
+  map<string, string> record = 1;
+  string context = 2;
+}
+
+message MaskRecordResponse {
+  map<string, string> result = 1;
+}
+
+message MaskBatchRequest {
+  repeated string field_names = 1;
+  repeated string values = 2;
+  string context = 3;
+}
+
+message MaskBatchResponse {
+  repeated string results = 1;
+}
+
+message MaskDataFrameRequest {
+  repeated RecordEntry data = 1;
+  repeated string columns = 2;
+  string context = 3;
+}
+
+message MaskDataFrameResponse {
+  repeated RecordEntry data = 1;
+}
+
+message HashRequest {
+  string value = 1;
+  string salt = 2;
+}
+
+message HashResponse {
+  string result = 1;
+}
+
+message DPRequest {
+  repeated double values = 1;
+  double epsilon = 2;
+  string mechanism = 3;
+  double delta = 4;
+  double clip_lower = 5;
+  double clip_upper = 6;
+}
+
+message DPResponse {
+  double result = 1;
+}
+
+message KAnonymizeRequest {
+  map<string, string> record = 1;
+  repeated string qi_cols = 2;
+  int32 k = 3;
+}
+
+message KAnonymizeResponse {
+  map<string, string> result = 1;
+}
+
+message KAnonymizeTableRequest {
+  repeated RecordEntry rows = 1;
+  repeated string qi_cols = 2;
+  int32 k = 3;
+  int32 max_depth = 4;
+}
+
+message KAnonymizeTableResponse {
+  repeated RecordEntry rows = 1;
+}
+
+message KAnonymizeDataFrameRequest {
+  repeated RecordEntry data = 1;
+  repeated string qi_cols = 2;
+  int32 k = 3;
+  int32 max_depth = 4;
+}
+
+message KAnonymizeDataFrameResponse {
+  repeated RecordEntry data = 1;
+}
+
+message ObfuscateQueryRequest {
+  string query = 1;
+  int32 num_dummies = 2;
+  string domain = 3;
+  repeated string medical_pool = 4;
+  repeated string generic_pool = 5;
+  int32 seed = 6;
+}
+
+message ObfuscateQueryBatchRequest {
+  repeated string queries = 1;
+  int32 num_dummies = 2;
+  string domain = 3;
+  repeated string medical_pool = 4;
+  repeated string generic_pool = 5;
+  int32 seed = 6;
+}
+
+message ObfuscateQueryBatchResponse {
+  repeated ObfuscateQueryResponse results = 1;
+}
+
+message ObfuscateQueryResponse {
+  repeated string result = 1;
+}
+
+message RecordEntry {
+  map<string, string> fields = 1;
+}
+
+message HealthRequest {}
+
+message HealthResponse {
+  string status = 1;
+  string namespace = 2;
+}
+
+message RecommendRequest {
+  string namespace = 1;
+  repeated double values = 2;
+  repeated RecordEntry rows = 3;
+  repeated string qi_cols = 4;
+}
+
+message RecommendResponse {
+  string status = 1;
+  string namespace = 2;
+  string recommended_params_json = 3;
+}
+
+message PerturbBinaryBatchRequest {
+  repeated int32 values = 1;
+  double epsilon = 2;
+}
+
+message PerturbBinaryBatchResponse {
+  repeated int32 results = 1;
+}
+
+message PerturbCategoricalBatchRequest {
+  repeated string values = 1;
+  repeated string categories = 2;
+  double epsilon = 3;
+}
+
+message PerturbCategoricalBatchResponse {
+  repeated string results = 1;
+}
+
+message EstimateBinaryFrequencyRequest {
+  repeated int32 reported_values = 1;
+  double epsilon = 2;
+}
+
+message EstimateBinaryFrequencyResponse {
+  double estimated_frequency = 1;
+}
+
+message EstimateCategoricalHistogramRequest {
+  repeated string reported_values = 1;
+  repeated string categories = 2;
+  double epsilon = 3;
+}
+
+message EstimateCategoricalHistogramResponse {
+  map<string, double> estimated_histogram = 1;
+}
+
+message DPHistogramRequest {
+  repeated string values = 1;
+  repeated string categories = 2;
+  double epsilon = 3;
+  string mechanism = 4;
+  double delta = 5;
+}
+
+message DPHistogramResponse {
+  map<string, double> result = 1;
+}
+
+message DPNoisyCountRequest {
+  double true_count = 1;
+  double epsilon = 2;
+  string mechanism = 3;
+  double delta = 4;
+}
+
+message DPNoisySumRequest {
+  double true_sum = 1;
+  double epsilon = 2;
+  string mechanism = 3;
+  double delta = 4;
+  double sensitivity = 5;
+  double clip_lower = 6;
+  double clip_upper = 7;
+}
+
+message DPNoisyMeanRequest {
+  double true_sum = 1;
+  double true_count = 2;
+  double epsilon = 3;
+  string mechanism = 4;
+  double delta = 5;
+  double sensitivity = 6;
+  double clip_lower = 7;
+  double clip_upper = 8;
+  double min_count = 9;
+}
+
+message DPNoisyHistogramRequest {
+  map<string, double> true_counts = 1;
+  double epsilon = 2;
+  string mechanism = 3;
+  double delta = 4;
+  // Fixed independently of the private counts; required.
+  repeated string categories = 5;
+}
+
+message DoubleChunk {
+  repeated double values = 1;
+}
+
+message StringChunk {
+  repeated string values = 1;
+}
+
+message DPChunkedCountRequest {
+  repeated DoubleChunk chunks = 1;
+  double epsilon = 2;
+  string mechanism = 3;
+  double delta = 4;
+}
+
+message DPChunkedSumRequest {
+  repeated DoubleChunk chunks = 1;
+  double epsilon = 2;
+  string mechanism = 3;
+  double delta = 4;
+  double clip_lower = 5;
+  double clip_upper = 6;
+}
+
+message DPChunkedMeanRequest {
+  repeated DoubleChunk chunks = 1;
+  double epsilon = 2;
+  string mechanism = 3;
+  double delta = 4;
+  double clip_lower = 5;
+  double clip_upper = 6;
+  double min_count = 7;
+}
+
+message DPChunkedHistogramRequest {
+  repeated StringChunk chunks = 1;
+  repeated string categories = 2;
+  double epsilon = 3;
+  string mechanism = 4;
+  double delta = 5;
+}
+
+message DPVectorMeanRequest {
+  repeated DoubleChunk vectors = 1;
+  double max_norm = 2;
+  double epsilon = 3;
+  double delta = 4;
+  string mechanism = 5;
+  double min_count = 6;
+  bool return_details = 7;
+}
+
+message DPVectorMeanResponse {
+  repeated double mean_vector = 1 [packed = true];
+  DPResultProto result_details = 2;
+}
+
+message DynClassificationRequest {
+  string field_name = 1;
+  string field_value = 2;
+  string domain = 3;
+  string standard = 4;
+}
+
+message DynSecurityTagProto {
+  string level = 1;
+  string category = 2;
+  string rule_id = 3;
+  string source_engine = 4;
+  string domain = 5;
+  string standard_id = 6;
+  bool is_override = 7;    // 是否为强制覆盖标签 / Whether this is a forced override tag
+  bool is_downgrade = 8;   // 是否由降级规则产生
+  string match_target = 9; // 匹配目标: field_name | field_value
+}
+
+message DynClassificationResponse {
+  repeated DynSecurityTagProto tags = 1;
+  string max_level = 2;
+  string audit_timestamp = 3;
+  string engine_layer = 4;
+}
+
+message DynEvalRequest {
+  string field_name = 1;
+  string value = 2;
+  string domain = 3;
+  string standard = 4;
+}
+
+message DynEvalResponse {
+  string field = 1;
+  string value = 2;
+  string level = 3;
+  string level_id = 4;
+  string category = 5;
+  double confidence = 6;
+  string matched_by = 7;
+  string result_json = 8;
+}
+
+message DynEvalRecordRequest {
+  map<string, string> record = 1;
+  repeated .privacy.local.RecordEntry records = 2;
+  string domain = 3;
+  string standard = 4;
+}
+
+message DynEvalRecordResponse {
+  string level = 1;
+  string overall_level = 2;
+  string result_json = 3;
+}
+
+message DynStandardsRequest {}
+
+message DynStandardsResponse {
+  repeated string standards = 1;
+  string details_json = 2;
+}
+
+message DynDomainsRequest {}
+
+message DynDomainsResponse {
+  repeated string domains = 1;
+}
+
+message DynOperatorsRequest {}
+
+message DynOperatorsResponse {
+  repeated string operators = 1;
+}
+
+message DynValidateRequest {
+  string rules_dir = 1;
+}
+
+message DynValidateResponse {
+  bool is_valid = 1;
+  bool valid = 2;
+  repeated string errors = 3;
+  repeated string warnings = 4;
+}
+
+message DynGenerateProfileRequest {
+  string doc_path = 1;
+}
+
+message DynGenerateProfileResponse {
+  string status = 1;
+  string message = 2;
+  map<string, string> generated_files = 3;
+}
+
+
+

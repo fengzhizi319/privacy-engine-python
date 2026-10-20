@@ -1,0 +1,15 @@
+{
+  "id": "dp.clip.value",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "clip_value",
+    "args": {
+      "value": 10.0,
+      "bound": 5.0
+    }
+  },
+  "expect": {
+    "result": 5.0
+  }
+}

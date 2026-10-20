@@ -1,0 +1,15 @@
+{
+  "id": "mask.value.mobile",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "mask_value",
+    "args": {
+      "field_name": "mobile",
+      "value": "13812345678"
+    }
+  },
+  "expect": {
+    "result": "138****5678"
+  }
+}

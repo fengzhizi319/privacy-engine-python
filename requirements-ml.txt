@@ -1,0 +1,30 @@
+# ML 扩展依赖（ml 镜像），在 core 基础上安装
+# 注意：依赖以 pyproject.toml 的 [project.optional-dependencies] ml extra 为唯一权威来源，
+# 本文件与之保持一致，供 Dockerfile ml 阶段直接安装使用。
+torch>=2.2.0
+# transformers 必须 >=5.14.0：Qwen3.5（qwen3_next 混合注意力架构）仅在 5.x 注册，
+# 4.x 加载 .models/Qwen3.5-0.8B-Privacy-Classifier-Smoother 会报 KeyError: 'qwen3_5'。
+# 注意 transformers 5.x 要求 huggingface_hub>=1.x，旧版 0.x API 不兼容。
+transformers>=5.14.0
+huggingface_hub>=1.27.0
+accelerate>=0.30.0
+onnxruntime>=1.17.0
+pillow>=10.2.0
+# ── Layer-3 Qwen3.5 本地 PyTorch 推理必备依赖 ──
+# Qwen3_5ForCausalLM 加载时硬依赖 einops，缺失会 ModuleNotFoundError 导致加载失败
+einops>=0.8.0
+# flash-linear-attention（fla）：Qwen3.5 混合架构线性注意力层所需 triton kernel，
+# 缺失时 transformers 回退到纯 PyTorch 实现，可能产生损坏/截断的 JSON 生成
+fla-core>=0.5.2
+# 可选（fast-path 加速）：causal-conv1d 为 mamba/conv 层提供 CUDA fast-path，缺失仅影响性能不影响正确性。
+# triton 由 torch 管理；WSL 下若出现 "0 active drivers" 错误请降级 triton==3.6.0，
+# 详见 docs/dynclassification/cuda_sm120_setup.md 第 6 节。
+# ModelScope Small-NER 推理后端（可选，缺失时 NER 层自动降级；datasets 为其运行时依赖）
+modelscope>=1.20.0
+datasets>=4.0.0,<=4.8.4
+# modelscope 在较新版本中未显式声明的传递依赖，直接列出以保证离线/干净环境可加载
+addict>=2.4.0
+sortedcontainers>=2.4.0
+yapf>=0.32.0
+oss2>=2.17.0
+simplejson>=3.3.0

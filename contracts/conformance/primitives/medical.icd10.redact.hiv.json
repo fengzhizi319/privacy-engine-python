@@ -1,0 +1,14 @@
+{
+  "id": "medical.icd10.redact.hiv",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "icd10_redact",
+    "args": {
+      "code": "B20.900"
+    }
+  },
+  "expect": {
+    "result": ""
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "id": "kano.mondrian.basic",
+  "kind": "exact_unordered",
+  "transport": "primitive",
+  "request": {
+    "op": "kano_mondrian",
+    "args": {
+      "rows": [
+        {
+          "age": "25",
+          "zipcode": "100001",
+          "gender": "M",
+          "salary": "25000"
+        },
+        {
+          "age": "26",
+          "zipcode": "100002",
+          "gender": "F",
+          "salary": "30000"
+        },
+        {
+          "age": "35",
+          "zipcode": "200001",
+          "gender": "M",
+          "salary": "40000"
+        },
+        {
+          "age": "36",
+          "zipcode": "200002",
+          "gender": "F",
+          "salary": "50000"
+        }
+      ],
+      "qi_cols": [
+        "age",
+        "zipcode"
+      ],
+      "k": 2,
+      "max_depth": 10
+    }
+  },
+  "expect": {
+    "records": [
+      {
+        "age": "[25-30]",
+        "zipcode": "100***",
+        "gender": "M",
+        "salary": "25000"
+      },
+      {
+        "age": "[25-30]",
+        "zipcode": "100***",
+        "gender": "F",
+        "salary": "30000"
+      },
+      {
+        "age": "[35-40]",
+        "zipcode": "200***",
+        "gender": "M",
+        "salary": "40000"
+      },
+      {
+        "age": "[35-40]",
+        "zipcode": "200***",
+        "gender": "F",
+        "salary": "50000"
+      }
+    ],
+    "k": 2,
+    "equivalence_classes_count": 2,
+    "qi_cols": [
+      "age",
+      "zipcode"
+    ]
+  }
+}

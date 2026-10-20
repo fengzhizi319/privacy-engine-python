@@ -1,0 +1,14 @@
+{
+  "id": "mask.name.suffix",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "mask_name",
+    "args": {
+      "value": "韩雨泽_3"
+    }
+  },
+  "expect": {
+    "result": "韩**泽"
+  }
+}

@@ -1,0 +1,251 @@
+# 医疗健康领域分类规则（含基因组、ICD-10、敏感病种）
+domain: "medical"
+version: "1.0.0"
+description: "医疗健康领域分类规则（含基因组、ICD-10、敏感病种）"
+
+# ==============================================================================
+# 1. 普通分类规则 (rules)
+# 常用字段包含：id, name, category, level, priority, match_logic, matchers
+# ==============================================================================
+rules:
+  # --- 基因组字段名规则 ---
+  - id: "RULE_MED_G_001"
+    name: "BRCA/TP53 基因指标"
+    category: "GENOMIC"
+    level: "L5"
+    priority: 200
+    match_logic: "AND"                     # 匹配逻辑: AND (全部匹配) 或 OR (任意匹配)
+    matchers:
+      - target: "field_name"
+        operator: "keyword_contains"
+        params:
+          keywords: [
+            "brca1", "brca2", "tp53", "egfr", "kras", "braf", "alk", "pik3ca", "erbb2", "her2"
+          ]
+          use_word_boundaries: false
+
+  - id: "RULE_MED_G_002"
+    name: "基因组变异指标"
+    category: "GENOMIC"
+    level: "L5"
+    priority: 200
+    match_logic: "OR"                      # 多个 matcher 满足任意一个即可命中
+    matchers:
+      - target: "field_name"
+        operator: "keyword_contains"
+        params:
+          keywords: [
+            "snp", "cnv", "indel", "sv", "mutation", "variant", "genome", "genomic",
+            "dna", "rna", "sequencing", "chromosome", "基因组", "变异", "突变", "单核苷酸多态性"
+          ]
+          use_word_boundaries: false
+      - target: "field_value"
+        operator: "regex"
+        params:
+          pattern: "^rs\\d+$"
+
+  - id: "RULE_MED_G_003"
+    name: "基因组文件格式"
+    category: "GENOMIC"
+    level: "L5"
+    priority: 200
+    match_logic: "AND"
+    matchers:
+      - target: "field_name"
+        operator: "keyword_contains"
+        params:
+          keywords: ["bam", "vcf", "fastq", "fasta", "cram", "bed", "gff", "gtf"]
+          # 启用词边界（\b）匹配：短关键词 bam/bed 等若用纯子串匹配会误伤
+          # bed_occupancy（床位运营字段）、bamboo_type 等无关字段。
+          # 注意 \b 将下划线视为词字符，故 bed_occupancy/bam_file 均不命中，
+          # 仅 bam/bed 等独立列名（或以非词字符分隔的形式）命中。
+          use_word_boundaries: true
+
+  # --- 敏感病种字段名规则 ---
+  - id: "RULE_MED_DISEASE_001"
+    name: "敏感病种字段"
+    category: "MEDICAL_TREATMENT"
+    level: "L4"
+    priority: 150
+    match_logic: "AND"
+    matchers:
+      - target: "field_name"
+        operator: "keyword_contains"
+        params:
+          keywords: [
+            "hiv", "aids", "std", "syphilis", "gonorrhea", "psychiatric", "schizophrenia",
+            "depression", "mental", "cancer", "tumor", "oncology", "tuberculosis", "hepatitis",
+            "艾滋病", "性病", "梅毒", "淋病", "精神病", "精神分裂", "抑抑症", "肿瘤", "癌症", "结核", "乙肝"
+          ]
+          use_word_boundaries: false
+
+  # --- 值级疾病关键词规则（field_value 真实数据证据，不受降级规则压制）---
+  # 与 funnel 的 L4/L5 safety net 语义一致：任何字段的值中检出疾病词即按对应等级定级。
+  - id: "RULE_MED_DISEASE_VALUE_001"
+    name: "疾病诊断值级识别"
+    category: "MEDICAL_TREATMENT"
+    level: "L4"
+    priority: 160
+    match_logic: "AND"
+    matchers:
+      - target: "field_value"
+        operator: "keyword_contains"
+        params:
+          # 复用 RULE_MED_DISEASE_001 的疾病词表，并补充 funnel safety net 同源的
+          # 常见癌症词（"癌" 等），确保 "胃癌" 等具体病种值可命中 L4。
+          # 值级匹配保持子串语义（中文无词边界概念），含疾病词的值命中 L4 为预期行为。
+          keywords: [
+            "hiv", "aids", "std", "syphilis", "gonorrhea", "psychiatric", "schizophrenia",
+            "depression", "mental", "cancer", "tumor", "oncology", "tuberculosis", "hepatitis",
+            "艾滋病", "性病", "梅毒", "淋病", "精神病", "精神分裂", "抑抑症", "肿瘤", "癌症", "结核", "乙肝",
+            "癌", "恶性肿瘤"
+          ]
+          use_word_boundaries: false
+
+  # 重症/高敏病种值级识别：性病、艾滋、精神分裂等按本 taxonomy 最高级 L5 定级
+  - id: "RULE_MED_DISEASE_VALUE_002"
+    name: "重症敏感病种值级识别"
+    category: "MEDICAL_TREATMENT"
+    level: "L5"
+    priority: 170
+    match_logic: "AND"
+    matchers:
+      - target: "field_value"
+        operator: "keyword_contains"
+        params:
+          keywords: [
+            "梅毒", "艾滋", "艾滋病", "hiv", "aids", "淋病", "尖锐湿疣", "精神分裂",
+            "syphilis", "gonorrhea", "schizophrenia"
+          ]
+          use_word_boundaries: false
+
+  # --- ICD-10 值规则 ---
+  - id: "RULE_MED_ICD10"
+    name: "ICD-10 医疗编码"
+    category: "MEDICAL_TREATMENT"
+    level: "L3"
+    priority: 120
+    match_logic: "AND"
+    matchers:
+      - target: "field_value"
+        operator: "icd10_range"
+        params:
+          default_level: "L3"
+          upgrade_level: "L4"
+          intervals:
+            - {start: "B20", end: "B24", category: "MEDICAL_ICD10_HIV"}
+            - {start: "A50", end: "A53", category: "MEDICAL_ICD10_STD"}
+            - {start: "A54", end: "A64", category: "MEDICAL_ICD10_STD"}
+            - {start: "F20", end: "F29", category: "MEDICAL_ICD10_PSYCHIATRIC"}
+            - {start: "C00", end: "C97", category: "MEDICAL_ICD10_CANCER"}
+
+  # --- 基因组文件内容检测 ---
+  - id: "RULE_MED_FILE_BAM"
+    name: "BAM 文件头检测"
+    category: "GENOMIC"
+    level: "L5"
+    priority: 180
+    match_logic: "AND"
+    matchers:
+      - target: "field_value"
+        operator: "prefix_match"
+        params:
+          prefixes: ["BAM\u0001", "@SQ"]
+
+  - id: "RULE_MED_FILE_VCF"
+    name: "VCF 文件头检测"
+    category: "GENOMIC"
+    level: "L5"
+    priority: 180
+    match_logic: "AND"
+    matchers:
+      - target: "field_value"
+        operator: "prefix_match"
+        params:
+          prefixes: ["##fileformat=VCF"]
+
+  - id: "RULE_MED_SEQ"
+    name: "碱基序列检测"
+    category: "GENOMIC"
+    level: "L5"
+    priority: 180
+    match_logic: "AND"
+    matchers:
+      - target: "field_value"
+        operator: "regex"
+        params:
+          pattern: "[ATCGNatcgn]{50,}"
+
+# ==============================================================================
+# 2. 敏感度降级与覆盖规则 (downgrade_rules)
+# 可用字段包含：id, name, keywords, level, category, force_suppress, max_force_suppress_level, exempt_rules
+# ==============================================================================
+downgrade_rules:
+  - id: "medical:RULE_DOWN_PUBLIC"
+    name: "公开报告降级"
+    keywords: ["public_report", "annual_summary", "科普", "公开", "宣传", "健康宣教", "medical_knowledge"]
+    level: "L1"
+    category: "PUBLIC_REPORT"
+    force_suppress: false                 # 是否开启强制压制擦除
+    max_force_suppress_level: ""          # 压制上限等级 (空=使用规则自身 level 作为上限)
+    exempt_rules: []                      # 压制豁免例外名单 (空=没有例外全额压制)
+
+  - id: "medical:RULE_DOWN_OPS"
+    name: "运营统计强制降级"
+    # 注：移除裸短关键词 "stat"/"cnt"——降级匹配为归一化子串语义（engine._evaluate_downgrade），
+    # "stat" 会误伤 "status"、"cnt" 会误伤含该子串的无关字段；复合关键词已覆盖真实运营字段。
+    keywords: [
+      "turnover_rate", "device_usage", "inventory", "hospital_stat", "bed_occupancy",
+      "stat_count", "门诊量", "住院人次", "设备利用率", "床位周转率", "库存统计", "工作量"
+    ]
+    level: "L2"
+    category: "OPERATIONAL_STAT"
+    force_suppress: true                  # 启用强制覆盖: 可压制符合条件的误中普通规则标签
+    max_force_suppress_level: "L3"        # 强行覆盖上限: 可把误标为 L3 的普通规则压制降至 L2
+    exempt_rules: ["RULE_PII_BANK_CARD"]  # 银行卡规则豁免强制降级
+
+# ==============================================================================
+# 3. 组合/上下文增强规则 (composite_rules)
+# 可用字段包含：id, name, field_patterns, min_matches, target_level, category, table_name_pattern, boost_level
+# ==============================================================================
+composite_rules:
+  - id: "COMP_MED_001"
+    name: "医疗基因组合"
+    field_patterns: ["diagnosis", "disease", "illness", "gene", "genomic", "mutation", "brca", "tp53"]
+    min_matches: 2
+    target_level: "L5"
+    category: "COMPOSITE_MEDICAL_GENOMIC"
+    table_name_pattern: ""                # 表名正则限制 (空=匹配任意表)
+    boost_level: ""                       # 提级配置 (空=直接使用 target_level)
+
+# ==============================================================================
+# 4. 脱敏治理策略 (redaction_strategy)
+# 定义哪些高敏疾病范畴需要彻底抹平（Purge），哪些适用范畴化泛化（Generalization）。
+# 词库（terms）仍由 medical_pipeline/rules.py 维护，此处仅配置治理策略路由。
+# ==============================================================================
+redaction_strategy:
+  # 彻底抹平范畴（严禁泛化，零痕迹擦除）
+  # 对应 rules.py 中 L5_TERMS_MAP + L4_TERMS_MAP 中按抹平策略处理的范畴
+  purge_categories:
+    - "HIV_AIDS"                  # 艾滋病/HIV 感染（L5 抹平级）
+    - "PSYCHIATRIC_DISORDER"      # 重型精神障碍（L5 抹平级）
+    - "GENETIC_DEFECT"            # 遗传缺陷（L5 抹平级）
+    - "STD_VENEREAL"              # 性传播疾病（L4 定级，抹平策略）
+
+  # 范畴化泛化范畴（重构为 L1/L2 通用器官/系统大类疾病）
+  # 对应 rules.py 中 L4_TERMS_MAP 中按泛化策略处理的范畴
+  generalization_categories:
+    - "MALIGNANT_NEOPLASM"        # 恶性肿瘤 → 相关系统疾病
+    - "HEPATITIS_VIRUS"           # 病毒性肝炎 → 肝脏疾病
+    - "SEVERE_ORGAN_DAMAGE"       # 严重器官损害 → 相关系统疾病
+
+  # 替换标签映射：范畴名 → 抽象标签名
+  # 防止替换文本中泄露原始敏感词（如不使用 [L5-HIV_AIDS-...] 而用 [L5-IMMUNODEFICIENCY-...]）
+  replacement_labels:
+    "HIV_AIDS": "IMMUNODEFICIENCY"
+    "PSYCHIATRIC_DISORDER": "PSYCHIATRIC_DISORDER"
+    "GENETIC_DEFECT": "GENETIC_DEFECT"
+    "STD_VENEREAL": "INFECTIOUS_DISEASE"
+    "MALIGNANT_NEOPLASM": "MALIGNANT_NEOPLASM"
+    "HEPATITIS_VIRUS": "HEPATITIS_VIRUS"
+    "SEVERE_ORGAN_DAMAGE": "SEVERE_ORGAN_DAMAGE"

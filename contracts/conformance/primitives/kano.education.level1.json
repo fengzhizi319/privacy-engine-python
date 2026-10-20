@@ -1,0 +1,15 @@
+{
+  "id": "kano.education.level1",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "education_hierarchy",
+    "args": {
+      "value": "本科",
+      "level": 1
+    }
+  },
+  "expect": {
+    "result": "高等教育"
+  }
+}

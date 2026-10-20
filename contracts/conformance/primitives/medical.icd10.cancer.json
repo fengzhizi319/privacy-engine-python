@@ -1,0 +1,18 @@
+{
+  "id": "medical.icd10.cancer",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "icd10_classify",
+    "args": {
+      "code": "C34.900"
+    }
+  },
+  "expect": {
+    "result": {
+      "level": "L4",
+      "category": "MEDICAL_ICD10_CANCER",
+      "hit": true
+    }
+  }
+}

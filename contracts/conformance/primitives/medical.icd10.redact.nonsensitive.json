@@ -1,0 +1,14 @@
+{
+  "id": "medical.icd10.redact.nonsensitive",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "icd10_redact",
+    "args": {
+      "code": "I10.x00"
+    }
+  },
+  "expect": {
+    "result": "I10.x00"
+  }
+}

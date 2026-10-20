@@ -1,0 +1,18 @@
+{
+  "id": "medical.icd10.hiv",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "icd10_classify",
+    "args": {
+      "code": "B20.900"
+    }
+  },
+  "expect": {
+    "result": {
+      "level": "L5",
+      "category": "MEDICAL_ICD10_HIV",
+      "hit": true
+    }
+  }
+}

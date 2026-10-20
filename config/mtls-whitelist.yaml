@@ -1,0 +1,106 @@
+# mTLS CN Whitelist Configuration
+#
+# 本配置文件定义允许通过 mTLS 认证的客户端证书 CN（Common Name）白名单，
+# 并为每个 CN 分配独立的权限 scope（最小权限原则）。
+#
+# 配置格式版本：1.0
+#
+# 使用方式：
+#   设置环境变量 PRIVACY_AUTH_MTLS_WHITELIST_FILE 指向本文件路径。
+#   例如：export PRIVACY_AUTH_MTLS_WHITELIST_FILE=/path/to/mtls-whitelist.yaml
+#
+# 热重载：
+#   修改本文件后无需重启服务，下次请求到达时自动检测并重新加载。
+#
+# 向后兼容：
+#   如果未设置 PRIVACY_AUTH_MTLS_WHITELIST_FILE，系统回退到
+#   PRIVACY_AUTH_MTLS_ALLOWED_CNS 环境变量（逗号分隔或 JSON 数组），
+#   所有 CN 默认获得 ["*"] 全权限。
+
+version: "1.0"
+
+# 默认 scope（当前未接线，保留供未来使用）：
+# 注意：当前实现中，未列在下方白名单中的 CN 一律拒绝（fail-closed），
+# 本字段不被 auth.py 读取。保留仅为前向兼容，避免修改 schema 版本。
+# 请勿依赖此字段实现 fail-open 语义。
+default_scopes: []
+
+# CN 白名单条目
+# 每个条目定义一个允许的 CN 及其权限。
+# 字段说明：
+#   cn:          客户端证书的 Common Name（必填）
+#   scopes:      授予的权限列表，["*"] 表示全权限（默认）
+#   description: 描述信息，用于审计日志（可选）
+#   enabled:     是否启用，false 表示临时禁用该条目（默认 true）
+#
+# 可用 scope 列表（参考 identity.py）：
+#   - "*"                      全权限
+#   - "privacy:mask"           脱敏
+#   - "privacy:hash"           哈希
+#   - "privacy:dp"             差分隐私
+#   - "privacy:kano"           K-匿名
+#   - "privacy:qol"            查询混淆
+#   - "privacy:budget"         预算查询
+#   - "privacy:profile"        参数推荐
+#   - "classification:read"    分类查询
+#   - "dynclassification:read" 动态分类查询
+#   - "dynclassification:write" 动态分类管理（重载/生成配置）
+#   - "medical:process"        医疗数据处理
+#   - "pipeline:process"       流水线处理
+#   - "ops:diagnostics"        运维诊断
+#   - "health:read"            健康检查
+
+entries:
+  # Go BFF / 统一控制台后端：全权限
+  - cn: "privacy-console-go-client"
+    scopes: ["*"]
+    description: "Go console backend - full access for admin operations"
+    enabled: true
+
+  # Go BFF gRPC 服务端自身标识（与 privacy-console-go-client 等价，用于服务网格/证书自识别）
+  - cn: "bff-go.privshield.internal"
+    scopes: ["*"]
+    description: "BFF-Go gRPC server identity"
+    enabled: true
+
+  # 数据服务调度中枢 service-hub：作为上游调度者，需要调用 datasource-mgr / audit-log
+  - cn: "service-hub.privshield.internal"
+    scopes: ["*"]
+    description: "service-hub data dispatch center - full access for internal orchestration"
+    enabled: true
+
+  # 模拟数据源服务 datasource-mgr：接受 service-hub 等内部服务调用
+  - cn: "datasource-mgr.privshield.internal"
+    scopes: ["*"]
+    description: "datasource-mgr mock data service identity"
+    enabled: true
+
+  # 审计存证服务 audit-log：接受 service-hub 等内部服务调用
+  - cn: "audit-log.privshield.internal"
+    scopes: ["*"]
+    description: "audit-log tamper-proof logging service identity"
+    enabled: true
+
+  # 网关服务：全权限
+  - cn: "privacy-gateway"
+    scopes: ["*"]
+    description: "API gateway - proxies all privacy primitives"
+    enabled: true
+
+  # 监控服务：只读权限
+  - cn: "prometheus-monitor"
+    scopes: ["health:read"]
+    description: "Prometheus scraper - health check only"
+    enabled: true
+
+  # 数据分析服务：差分隐私 + 分类
+  - cn: "data-analytics"
+    scopes: ["privacy:dp", "privacy:kano", "classification:read", "dynclassification:read"]
+    description: "Analytics pipeline - DP and classification access"
+    enabled: true
+
+  # 示例：临时禁用的条目
+  # - cn: "deprecated-service"
+  #   scopes: ["*"]
+  #   description: "Deprecated service - temporarily disabled"
+  #   enabled: false

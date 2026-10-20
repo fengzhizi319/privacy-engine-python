@@ -1,0 +1,127 @@
+# ==============================================================================
+# Python 引擎 + Go TLCP/mTLS 终结器（本地/演示编排）
+# ==============================================================================
+# 拓扑（两个容器共享网络命名空间，Python 只监听回环）：
+#
+#   client ──mTLS(TLCP/both/TLS)──▶ terminator :8079/:50051/:9079
+#                                        └──127.0.0.1──▶ python :18079/:15051/:19079
+#
+# 用法（在 services/privacy-engine-python 下）：
+#   mkdir -p deploy/secrets
+#   head -c 32 /dev/urandom > deploy/secrets/identity-hmac.key
+#   export PRIVACY_AUTH_INTERNAL_KEYS_JSON='{"psk_replace_me":{"name":"local","scopes":["*"]}}'
+#   docker compose -f deploy/docker-compose.terminator.yml up --build
+#
+# 前置材料：
+#   - config/certs/{server.crt,server.key,ca.crt}
+#   - config/certs/tlcp/{server-sign.*,server-enc.*,ca.crt}
+#   - config/mtls-whitelist.yaml
+#   生成命令见 config/certs/README.md。
+#
+# 注意：python-engine 使用 network_mode: service:terminator，因此**不要**再给它
+# 映射 ports；18079/15051/19079 只存在于共享命名空间的回环地址上。
+# ==============================================================================
+name: privshield-python-terminator
+
+services:
+  terminator:
+    build:
+      context: ../../..
+      dockerfile: services/privacy-engine-python/terminator/Dockerfile
+      args:
+        VERSION: ${VERSION:-2.0.0}
+    image: privshield-python-terminator:${VERSION:-2.0.0}
+    restart: unless-stopped
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      PRIVACY_TERMINATOR_SERVICE_NAME: privshield-python-terminator
+      PRIVACY_TERMINATOR_REST_UPSTREAM: http://127.0.0.1:18079
+      PRIVACY_TERMINATOR_GRPC_UPSTREAM: 127.0.0.1:15051
+      PRIVACY_TERMINATOR_OPS_UPSTREAM: http://127.0.0.1:19079
+      PRIVACY_TERMINATOR_IDENTITY_ENABLED: "true"
+      PRIVACY_TERMINATOR_IDENTITY_HMAC_ALGO: ${PRIVACY_TERMINATOR_IDENTITY_HMAC_ALGO:-sm3}
+      PRIVACY_TERMINATOR_IDENTITY_HMAC_KEY_FILE: /run/secrets/identity-hmac-key
+      PRIVACY_TERMINATOR_IDENTITY_MAX_SKEW_SECONDS: "60"
+      PRIVACY_TLS_STACK: ${PRIVACY_TLS_STACK:-tlcp}
+      PRIVACY_OPS_TLS_STACK: ${PRIVACY_OPS_TLS_STACK:-both}
+      PRIVACY_TLS_CERT_FILE: /certs/server.crt
+      PRIVACY_TLS_KEY_FILE: /certs/server.key
+      PRIVACY_TLS_CA_FILE: /certs/ca.crt
+      PRIVACY_TLCP_SIGN_CERT_FILE: /certs/tlcp/server-sign.crt
+      PRIVACY_TLCP_SIGN_KEY_FILE: /certs/tlcp/server-sign.key
+      PRIVACY_TLCP_ENC_CERT_FILE: /certs/tlcp/server-enc.crt
+      PRIVACY_TLCP_ENC_KEY_FILE: /certs/tlcp/server-enc.key
+      PRIVACY_TLCP_CLIENT_CA_FILE: /certs/tlcp/ca.crt
+      PRIVACY_AUTH_MTLS_WHITELIST_FILE: /etc/privshield/mtls-whitelist.yaml
+      PRIVACY_LOG_LEVEL: ${PRIVACY_LOG_LEVEL:-INFO}
+    ports:
+      - "${TERMINATOR_REST_PORT:-8079}:8079"
+      - "${TERMINATOR_GRPC_PORT:-50051}:50051"
+      - "${TERMINATOR_OPS_PORT:-9079}:9079"
+    volumes:
+      - ../../../config/certs:/certs:ro
+      - ../../../config/mtls-whitelist.yaml:/etc/privshield/mtls-whitelist.yaml:ro
+      - ./secrets/identity-hmac.key:/run/secrets/identity-hmac-key:ro
+    healthcheck:
+      # ops 栈为 both/tls 时可用标准 TLS；PRIVACY_OPS_TLS_STACK=tlcp 时改用 TCP 探针。
+      test: ["CMD-SHELL", "wget -q --no-check-certificate -O- https://127.0.0.1:9079/healthz >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+
+  python-engine:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      target: core
+    image: privshield-python:${VERSION:-2.0.0}
+    restart: unless-stopped
+    network_mode: "service:terminator"
+    depends_on:
+      terminator:
+        condition: service_started
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      # 只监听共享命名空间的回环地址；终结器是唯一对外入口。
+      PRIVACY_REST_HOST: 127.0.0.1
+      PRIVACY_REST_PORT: "18079"
+      PRIVACY_GRPC_HOST: 127.0.0.1
+      PRIVACY_GRPC_PORT: "15051"
+      PRIVACY_OPS_HOST: 127.0.0.1
+      PRIVACY_OPS_PORT: "19079"
+      # Python 不终结 TLCP；回环段为明文，由终结器对外提供三档 mTLS。
+      PRIVACY_OPS_TLS_STACK: tlcp
+      PRIVACY_TLS_STACK: ${PRIVACY_TLS_STACK:-tlcp}
+      PRIVACY_TERMINATOR_IDENTITY_ENABLED: "true"
+      PRIVACY_TERMINATOR_IDENTITY_HMAC_ALGO: ${PRIVACY_TERMINATOR_IDENTITY_HMAC_ALGO:-sm3}
+      PRIVACY_TERMINATOR_IDENTITY_HMAC_KEY_FILE: /run/secrets/identity-hmac-key
+      PRIVACY_TERMINATOR_IDENTITY_MAX_SKEW_SECONDS: "60"
+      PRIVACY_AUTH_ENABLED: "true"
+      PRIVACY_AUTH_INTERNAL_KEYS_JSON: ${PRIVACY_AUTH_INTERNAL_KEYS_JSON:?set PRIVACY_AUTH_INTERNAL_KEYS_JSON}
+      PRIVACY_AUTH_INTERNAL_MTLS_ENABLED: "true"
+      PRIVACY_AUTH_MTLS_WHITELIST_FILE: /etc/privshield/mtls-whitelist.yaml
+      PRIVACY_RATE_LIMIT_ENABLED: "true"
+      PRIVACY_HEALTH_NO_AUTH: "true"
+      PRIVACY_LOG_FORMAT: json
+      PRIVACY_LOG_LEVEL: ${PRIVACY_LOG_LEVEL:-INFO}
+    volumes:
+      - ../../../config/mtls-whitelist.yaml:/etc/privshield/mtls-whitelist.yaml:ro
+      - ./secrets/identity-hmac.key:/run/secrets/identity-hmac-key:ro
+      - python-data:/data
+      - python-tmp:/tmp
+    healthcheck:
+      # 覆盖镜像内置的 :8079 探针（本拓扑 Python 监听 18079）。
+      test: ["CMD-SHELL", "curl -sf http://127.0.0.1:18079/health >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+volumes:
+  python-data:
+  python-tmp:

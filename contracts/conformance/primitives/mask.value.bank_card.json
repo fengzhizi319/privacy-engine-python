@@ -1,0 +1,15 @@
+{
+  "id": "mask.value.bank_card",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "mask_value",
+    "args": {
+      "field_name": "bank_card",
+      "value": "6222020200112233445"
+    }
+  },
+  "expect": {
+    "result": "622202*********3445"
+  }
+}

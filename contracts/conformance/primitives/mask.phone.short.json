@@ -1,0 +1,14 @@
+{
+  "id": "mask.phone.short",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "mask_phone",
+    "args": {
+      "value": "123"
+    }
+  },
+  "expect": {
+    "result": "***"
+  }
+}

@@ -1,0 +1,10 @@
+grpc-recommend-ns:
+  dp:
+    clip_lower: 10.0
+    clip_upper: 40.0
+    delta: 1.0e-05
+    epsilon: 1.0
+    mechanism: laplace
+  k_anonymity:
+    k: 2
+    max_depth: 10

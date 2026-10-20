@@ -1,0 +1,15 @@
+{
+  "id": "kano.zipcode.level2",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "zipcode_hierarchy",
+    "args": {
+      "value": "100000",
+      "level": 2
+    }
+  },
+  "expect": {
+    "result": "10****"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "id": "kano.mondrian.error.k1",
+  "kind": "error",
+  "transport": "primitive",
+  "request": {
+    "op": "kano_mondrian",
+    "args": {
+      "rows": [
+        {
+          "age": "25",
+          "zipcode": "100001",
+          "gender": "M",
+          "salary": "25000"
+        },
+        {
+          "age": "26",
+          "zipcode": "100002",
+          "gender": "F",
+          "salary": "30000"
+        },
+        {
+          "age": "35",
+          "zipcode": "200001",
+          "gender": "M",
+          "salary": "40000"
+        },
+        {
+          "age": "36",
+          "zipcode": "200002",
+          "gender": "F",
+          "salary": "50000"
+        }
+      ],
+      "qi_cols": [
+        "age"
+      ],
+      "k": 1,
+      "max_depth": 10
+    }
+  },
+  "expect": {
+    "error_contains": "at least 2"
+  }
+}

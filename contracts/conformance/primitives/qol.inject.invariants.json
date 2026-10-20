@@ -1,0 +1,20 @@
+{
+  "id": "qol.inject.invariants",
+  "kind": "invariant",
+  "transport": "primitive",
+  "request": {
+    "op": "qol_inject",
+    "args": {
+      "query": "查询2型糖尿病患者的用药记录",
+      "num_decoys": 3,
+      "domain": "medical"
+    }
+  },
+  "expect": {
+    "invariants": {
+      "total_count": 4,
+      "real_count": 1,
+      "real_index_in_range": true
+    }
+  }
+}

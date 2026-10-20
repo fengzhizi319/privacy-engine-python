@@ -1,0 +1,18 @@
+{
+  "id": "medical.icd10.nonsensitive",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "icd10_classify",
+    "args": {
+      "code": "I10.x00"
+    }
+  },
+  "expect": {
+    "result": {
+      "level": "",
+      "category": "",
+      "hit": false
+    }
+  }
+}

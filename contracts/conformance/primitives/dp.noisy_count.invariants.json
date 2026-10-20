@@ -1,0 +1,17 @@
+{
+  "id": "dp.noisy_count.invariants",
+  "kind": "invariant",
+  "transport": "primitive",
+  "request": {
+    "op": "dp_noisy_count",
+    "args": {
+      "count": 100,
+      "epsilon": 1.0
+    }
+  },
+  "expect": {
+    "invariants": {
+      "result_is_finite": true
+    }
+  }
+}

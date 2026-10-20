@@ -1,0 +1,14 @@
+{
+  "id": "mask.email.long",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "mask_email",
+    "args": {
+      "value": "zhangsan@example.com"
+    }
+  },
+  "expect": {
+    "result": "z***n@example.com"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "medical.date.month.invalid",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "truncate_date_to_month",
+    "args": {
+      "date": "invalid-date"
+    }
+  },
+  "expect": {
+    "result": "invalid-date"
+  }
+}

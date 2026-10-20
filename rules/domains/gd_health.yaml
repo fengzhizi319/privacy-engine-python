@@ -1,0 +1,277 @@
+# 广东省健康医疗数据安全分类分级领域规则包
+# 依据《广东省健康医疗数据安全分类分级管理技术规范》附录 B（数据分级示例）抽取。
+# 等级体系：G1~G4（见 taxonomies/gd_health.yaml）。
+domain: gd_health
+version: 1.0.0
+description: 从文档 广东省健康医疗数据安全分类分级管理技术规范.md 抽取的分类分级规则包
+
+rules:
+  # ============ G4（第4级 高敏感）============
+  - id: RULE_GD_HEALTH_IDCARD
+    name: 个人身份信息-身份证件号码
+    category: PERSONAL_ATTRIBUTE
+    level: G4
+    matchers:
+      - target: field_value
+        operator: id_card_checksum
+        params: {}
+      - target: field_name
+        operator: keyword_contains
+        params:
+          keywords: [idcard, sfz, identity, id_card, 身份证, 工作证, 居住证, 社保卡, 健康卡号, 住院号]
+    match_logic: OR
+    priority: 95
+    enabled: true
+    tags: {}
+
+  - id: RULE_GD_HEALTH_PHONE
+    name: 个人通讯信息-电话号码
+    category: PERSONAL_ATTRIBUTE
+    level: G4
+    matchers:
+      - target: field_value
+        operator: regex
+        params:
+          pattern: ^1[3-9]\d{9}$
+      - target: field_name
+        operator: keyword_contains
+        params:
+          keywords: [mobile, phone, cell, telephone, 电话, 手机, 联系方式]
+    match_logic: OR
+    priority: 90
+    enabled: true
+    tags: {}
+
+  - id: RULE_GD_HEALTH_EMAIL
+    name: 个人通讯信息-邮箱账号
+    category: PERSONAL_ATTRIBUTE
+    level: G4
+    matchers:
+      - target: field_value
+        operator: email
+        params: {}
+      - target: field_name
+        operator: keyword_contains
+        params:
+          keywords: [email, mail, 邮箱, 账号]
+    match_logic: OR
+    priority: 85
+    enabled: true
+    tags: {}
+
+  - id: RULE_GD_HEALTH_BIOMETRIC
+    name: 个人生物识别信息
+    category: PERSONAL_ATTRIBUTE
+    level: G4
+    matchers:
+      - target: field_name
+        operator: keyword_contains
+        params:
+          keywords: [gene, fingerprint, voiceprint, palm, iris, 基因, 指纹, 声纹, 掌纹, 耳廓, 虹膜, 面部特征, 生物识别]
+    match_logic: OR
+    priority: 92
+    enabled: true
+    tags: {}
+
+  - id: RULE_GD_HEALTH_CREDIT
+    name: 个人信用记录信息
+    category: PERSONAL_ATTRIBUTE
+    level: G4
+    matchers:
+      - target: field_name
+        operator: keyword_contains
+        params:
+          keywords: [credit, 信用, 征信, 信用评分, 信用报告]
+    match_logic: OR
+    priority: 80
+    enabled: true
+    tags: {}
+
+  - id: RULE_GD_HEALTH_MEDICAL_RECORD
+    name: 个人健康状况数据-病历病史
+    category: PERSONAL_HEALTH
+    level: G4
+    matchers:
+      - target: field_name
+        operator: keyword_contains
+        params:
+          keywords: [medical_record, 病历, 主诉, chief_complaint, 现病史, 既往史, 家族史, 过敏史, allergy, 体格检查, 遗传咨询]
+    match_logic: OR
+    priority: 88
+    enabled: true
+    tags: {}
+
+  - id: RULE_GD_HEALTH_OUTPATIENT
+    name: 医疗应用数据-门急诊病历
+    category: MEDICAL_APPLICATION
+    level: G4
+    matchers:
+      - target: field_name
+        operator: keyword_contains
+        params:
+          keywords: [outpatient, 门诊, 急诊, 就诊记录, 入院记录, 出院小结, 转诊]
+    match_logic: OR
+    priority: 86
+    enabled: true
+    tags: {}
+
+  - id: RULE_GD_HEALTH_INSURANCE
+    name: 医疗资金和支付数据-保险信息
+    category: MEDICAL_FINANCE
+    level: G4
+    matchers:
+      - target: field_name
+        operator: keyword_contains
+        params:
+          keywords: [insurance, 保险, 保险账号, 保险状态, 保险金额, 医保]
+    match_logic: OR
+    priority: 84
+    enabled: true
+    tags: {}
+
+  # ============ G3（第3级 敏感）============
+  - id: RULE_GD_HEALTH_LAB_REPORT
+    name: 医疗应用数据-检查检验报告
+    category: MEDICAL_APPLICATION
+    level: G3
+    matchers:
+      - target: field_name
+        operator: keyword_contains
+        params:
+          keywords: [lab_report, test_report, 检验, 检查报告, 化验, 检验结果]
+    match_logic: OR
+    priority: 70
+    enabled: true
+    tags: {}
+
+  - id: RULE_GD_HEALTH_SURGERY
+    name: 医疗应用数据-手术记录
+    category: MEDICAL_APPLICATION
+    level: G3
+    matchers:
+      - target: field_name
+        operator: keyword_contains
+        params:
+          keywords: [surgery, operation, 手术, 麻醉记录, 输血记录]
+    match_logic: OR
+    priority: 68
+    enabled: true
+    tags: {}
+
+  - id: RULE_GD_HEALTH_MEDICAL_ORDER
+    name: 医疗应用数据-住院医嘱与病程记录
+    category: MEDICAL_APPLICATION
+    level: G3
+    matchers:
+      - target: field_name
+        operator: keyword_contains
+        params:
+          keywords: [medical_order, 医嘱, 病程记录, progress_note, 护理记录]
+    match_logic: OR
+    priority: 66
+    enabled: true
+    tags: {}
+
+  - id: RULE_GD_HEALTH_PAYMENT
+    name: 医疗资金和支付数据-医疗交易信息
+    category: MEDICAL_FINANCE
+    level: G3
+    matchers:
+      - target: field_name
+        operator: keyword_contains
+        params:
+          keywords: [transaction, payment, 交易, 支付信息, 消费金额, 交易记录, 费用]
+    match_logic: OR
+    priority: 64
+    enabled: true
+    tags: {}
+
+  - id: RULE_GD_HEALTH_BANKCARD
+    name: 医疗资金和支付数据-银行卡号
+    category: MEDICAL_FINANCE
+    level: G3
+    matchers:
+      - target: field_value
+        operator: luhn_checksum
+        params: {}
+      - target: field_name
+        operator: keyword_contains
+        params:
+          keywords: [bank_card, bankcard, card_no, 银行卡, 卡号]
+    match_logic: OR
+    priority: 62
+    enabled: true
+    tags: {}
+
+  - id: RULE_GD_HEALTH_HOSPITAL_OPS
+    name: 卫生资源数据-医院运营数据
+    category: HEALTH_RESOURCE
+    level: G3
+    matchers:
+      - target: field_name
+        operator: keyword_contains
+        params:
+          keywords: [hospital_operation, 运营数据, 人力资源, 财务数据, 物资数据, 后勤数据]
+    match_logic: OR
+    priority: 50
+    enabled: true
+    tags: {}
+
+  # ============ G2（第2级 较低敏感）============
+  - id: RULE_GD_HEALTH_MEDICATION
+    name: 医疗应用数据-用药信息
+    category: MEDICAL_APPLICATION
+    level: G2
+    matchers:
+      - target: field_name
+        operator: keyword_contains
+        params:
+          keywords: [medication, drug, prescription, 用药, 药物, 处方, 药物剂量]
+    match_logic: OR
+    priority: 40
+    enabled: true
+    tags: {}
+
+  # ============ G1（第1级 低敏感）============
+  - id: RULE_GD_HEALTH_HOSPITAL_BASIC
+    name: 卫生资源数据-医院基本数据
+    category: HEALTH_RESOURCE
+    level: G1
+    matchers:
+      - target: field_name
+        operator: keyword_contains
+        params:
+          keywords: [hospital_name, 医疗机构名称, 医院学科, 床位数, 医院地址, 医疗机构类别]
+    match_logic: OR
+    priority: 30
+    enabled: true
+    tags: {}
+
+  - id: RULE_GD_HEALTH_PUBLIC_HEALTH
+    name: 公共卫生数据-疫情与疾病监测统计
+    category: PUBLIC_HEALTH
+    level: G1
+    matchers:
+      - target: field_name
+        operator: keyword_contains
+        params:
+          keywords: [epidemic, 传染病, 疫情, 发病率, 死亡率, 疾病监测, 疫苗接种, 出生人数]
+    match_logic: OR
+    priority: 28
+    enabled: true
+    tags: {}
+
+# 降级规则：广东规范 7.1 b) 未经脱敏数据不可降级，故不提供降级规则。
+downgrade_rules: []
+
+# 组合规则：关联叠加效应原则（4 j)）——非敏感数据关联后可能产生敏感数据，
+# 关联后的数据级别应高于原始数据。记录中同时出现身份+通讯+健康三类字段时升至 G4。
+composite_rules:
+  - id: COMP_GD_001
+    name: 身份-通讯-健康关联叠加
+    field_patterns: ["idcard|id_card|sfz|身份证", "mobile|phone|手机|电话", "病历|medical_record|诊断|diagnosis"]
+    min_matches: 3
+    target_level: G4
+    category: PERSONAL_ATTRIBUTE
+    table_name_pattern: ""
+    boost_level: ""

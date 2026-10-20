@@ -1,0 +1,22 @@
+{
+  "id": "dp.clip.l2",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "clip_l2_norm",
+    "args": {
+      "vector": [
+        6.0,
+        8.0
+      ],
+      "max_norm": 5.0
+    }
+  },
+  "expect": {
+    "result": [
+      3.0,
+      4.0
+    ]
+  },
+  "tolerance": 1e-09
+}

@@ -1,0 +1,31 @@
+# 本地开发与测试完整依赖（core + dev）
+# 注意：依赖以 pyproject.toml 为唯一权威来源（core = [project] dependencies，
+# dev/docs = [project.optional-dependencies]），本文件与之保持一致，供本地快速安装。
+# 推荐改用：pip install -e ".[dev,docs]"
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+python-multipart>=0.0.9
+pydantic>=2.6.0
+grpcio>=1.82.1,<2.0.0
+grpcio-tools==1.82.1
+protobuf>=7.35.0,<8.0.0
+pyyaml>=6.0.1
+httpx>=0.27.0
+limits>=3.10.0
+cryptography>=42.0.0
+python-json-logger>=2.0.7
+prometheus-client>=0.20.0
+numpy>=1.24.0,<3.0.0
+pandas>=2.0.0,<4.0.0
+pyarrow>=14.0.0,<26.0.0
+scipy>=1.12.0,<2.0.0
+python-dotenv>=1.0.0
+bcrypt>=4.1,<5
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
+locust>=2.20.0
+
+# Documentation (MkDocs + Material)
+mkdocs>=1.6.0
+mkdocs-material>=9.5.0
+mkdocs-minify-plugin>=0.8.0

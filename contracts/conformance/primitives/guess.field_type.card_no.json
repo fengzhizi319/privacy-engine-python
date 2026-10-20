@@ -1,0 +1,14 @@
+{
+  "id": "guess.field_type.card_no",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "guess_field_type",
+    "args": {
+      "field_name": "card_no"
+    }
+  },
+  "expect": {
+    "result": "bank_card"
+  }
+}

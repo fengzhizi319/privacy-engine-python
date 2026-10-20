@@ -1,0 +1,16 @@
+{
+  "id": "dp.clip.range",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "clip_value_range",
+    "args": {
+      "value": -10.0,
+      "lower": 0.0,
+      "upper": 100.0
+    }
+  },
+  "expect": {
+    "result": 0.0
+  }
+}

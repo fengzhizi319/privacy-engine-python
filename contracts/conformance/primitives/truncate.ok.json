@@ -1,0 +1,15 @@
+{
+  "id": "truncate.ok",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "truncate",
+    "args": {
+      "value": "abcdef",
+      "keep_prefix": 3
+    }
+  },
+  "expect": {
+    "result": "abc***"
+  }
+}

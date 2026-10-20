@@ -1,0 +1,16 @@
+{
+  "id": "mask.default.short",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "mask_default",
+    "args": {
+      "value": "ab",
+      "prefix": 3,
+      "suffix": 3
+    }
+  },
+  "expect": {
+    "result": "a*"
+  }
+}

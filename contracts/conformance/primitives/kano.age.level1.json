@@ -1,0 +1,15 @@
+{
+  "id": "kano.age.level1",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "age_hierarchy",
+    "args": {
+      "value": "45",
+      "level": 1
+    }
+  },
+  "expect": {
+    "result": "[45-50]"
+  }
+}

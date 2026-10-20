@@ -1,0 +1,16 @@
+{
+  "id": "mask.default.normal",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "mask_default",
+    "args": {
+      "value": "abcdefgh",
+      "prefix": 3,
+      "suffix": 3
+    }
+  },
+  "expect": {
+    "result": "abc**fgh"
+  }
+}

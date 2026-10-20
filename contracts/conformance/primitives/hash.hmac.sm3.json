@@ -1,0 +1,15 @@
+{
+  "id": "hash.hmac.sm3",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "hash_hmac",
+    "args": {
+      "value": "hello",
+      "salt": "salt"
+    }
+  },
+  "expect": {
+    "result": "SKTdBFvNvKAtTphi"
+  }
+}

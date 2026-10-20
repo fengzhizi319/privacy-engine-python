@@ -1,0 +1,22 @@
+{
+  "id": "rest.mask.phone",
+  "kind": "exact",
+  "transport": "rest",
+  "request": {
+    "method": "POST",
+    "path": "/v1/privacy/mask",
+    "json": {
+      "field_name": "mobile",
+      "value": "13812345678"
+    }
+  },
+  "expect": {
+    "status": 200,
+    "json": {
+      "field": "mobile",
+      "masked": "138****5678",
+      "result": "138****5678"
+    }
+  },
+  "tolerance": 0
+}

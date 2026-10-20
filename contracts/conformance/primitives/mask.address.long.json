@@ -1,0 +1,14 @@
+{
+  "id": "mask.address.long",
+  "kind": "exact",
+  "transport": "primitive",
+  "request": {
+    "op": "mask_address",
+    "args": {
+      "value": "北京市朝阳区某某街道123号"
+    }
+  },
+  "expect": {
+    "result": "北京市朝阳区****"
+  }
+}
