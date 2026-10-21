@@ -94,7 +94,7 @@ def _worker_entry(
     # 设置进程标题便于运维识别（可选依赖 setproctitle）
     try:
         import setproctitle
-        setproctitle.setproctitle(f"privacy-agent-worker-{worker_id}")
+        setproctitle.setproctitle(f"privacy-engine-worker-{worker_id}")
     except ImportError:
         # setproctitle 不可用时通过 os.setproctitle 或跳过
         pass
@@ -266,7 +266,7 @@ def _monitor_workers(
                         new_p = ctx.Process(
                             target=_worker_entry,
                             args=tuple(args),
-                            name=f"privacy-agent-worker-{i}",
+                            name=f"privacy-engine-worker-{i}",
                             daemon=False,
                         )
                         new_p.start()
@@ -365,7 +365,7 @@ def launch(
             args=(
                 i, host_rest, port_rest, host_grpc, port_grpc, grpc_max_workers, host_ops, port_ops
             ),
-            name=f"privacy-agent-worker-{i}",
+            name=f"privacy-engine-worker-{i}",
             daemon=False,
         )
         p.start()
@@ -569,7 +569,7 @@ def launch_with_warmup(
             args=(
                 i, host_rest, port_rest, host_grpc, port_grpc, grpc_max_workers, host_ops, port_ops
             ),
-            name=f"privacy-agent-worker-{i}",
+            name=f"privacy-engine-worker-{i}",
             daemon=False,
         )
         p.start()
